@@ -1,0 +1,197 @@
+:root {
+  --spacing: 1rem;
+  --card-width: 320px;
+  --preview-height: 120px;
+  --border-radius: 0.75rem;
+  --color-bg: #f5f5f5;
+  --color-accent: #0077ff;
+  --color-focus: #ffb300;
+}
+body {
+  font-family: system-ui, sans-serif;
+  background: var(--color-bg);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+header {
+  width: 100%;
+  padding: var(--spacing);
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+h1 {
+  margin: 0 0 var(--spacing) 0;
+  font-size: 2rem;
+}
+nav[role="tablist"] {
+  display: flex;
+  gap: var(--spacing);
+}
+nav button[role="tab"] {
+  background: none;
+  border: none;
+  padding: 0.5em 1.5em;
+  font-size: 1rem;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.2s;
+}
+nav button[aria-selected="true"] {
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: bold;
+}
+nav button:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-focus);
+}
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: var(--spacing);
+}
+#color-card {
+  background: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  width: var(--card-width);
+  padding: var(--spacing);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing);
+}
+#preview {
+  width: 100%;
+  height: var(--preview-height);
+  border-radius: var(--border-radius);
+  border: 2px solid #eee;
+  margin-bottom: var(--spacing);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: background 0.3s;
+}
+.color-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+#hex-code {
+  font-family: monospace;
+  font-size: 1.2rem;
+  background: #f0f0f0;
+  padding: 0.2em 0.6em;
+  border-radius: 0.5em;
+  cursor: pointer;
+}
+#copy-btn {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: 0.5em;
+  padding: 0.2em 0.8em;
+  cursor: pointer;
+  font-size: 1rem;
+}
+#copy-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-focus);
+}
+.contrast-info {
+  display: flex;
+  gap: 1em;
+  font-size: 0.95rem;
+}
+#flip-btn, #fav-btn {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: 0.5em;
+  padding: 0.5em 1.2em;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 0.5em;
+}
+#fav-btn {
+  background: #ffd700;
+  color: #333;
+  margin-left: 0.5em;
+}
+#flip-btn:focus-visible, #fav-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-focus);
+}
+#presets-panel {
+  width: var(--card-width);
+  margin-top: var(--spacing);
+  background: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: var(--spacing);
+}
+#presets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5em;
+}
+.preset-color {
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 0.5em;
+  border: 2px solid #eee;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  transition: border 0.2s;
+}
+.preset-color:focus-visible {
+  border: 2px solid var(--color-focus);
+  outline: none;
+}
+.preset-color[aria-selected="true"] {
+  border: 2px solid var(--color-accent);
+  font-weight: bold;
+}
+#favorites-row {
+  display: flex;
+  gap: 0.5em;
+  margin-top: var(--spacing);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.favorite-color {
+  width: 2em;
+  height: 2em;
+  border-radius: 0.5em;
+  border: 2px solid #eee;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  margin-bottom: 0.2em;
+}
+.favorite-color:focus-visible {
+  border: 2px solid var(--color-focus);
+  outline: none;
+}
+@media (max-width: 400px) {
+  :root {
+    --card-width: 98vw;
+    --preview-height: 80px;
+  }
+  #presets-panel, #color-card {
+    width: 98vw;
+    padding: 0.5em;
+  }
+}
