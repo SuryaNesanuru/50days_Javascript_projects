@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Modal & Drawer with Focus Trap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+  <header class="topbar">
+    <h1>UI Patterns</h1>
+    <nav>
+      <button class="btn" data-open="modal" id="open-modal">Open Modal</button>
+      <button class="btn" data-open="drawer" id="open-drawer">Open Drawer</button>
+    </nav>
+  </header>
+
+  <main id="content">
+    <section class="hero">
+      <h2>Accessible Overlay Components</h2>
+      <p>Includes focus management, tab trapping, ESC to close, and returns focus to the trigger.</p>
+    </section>
+    <section class="grid">
+      <article class="card">
+        <h3>Why a focus trap?</h3>
+        <p>It keeps keyboard focus inside the overlay until dismissed, improving accessibility and UX.</p>
+      </article>
+      <article class="card">
+        <h3>How it works</h3>
+        <p>On open, focus moves into the first focusable control; on close, it returns to the opener.</p>
+      </article>
+    </section>
+  </main>
+
+  <div class="overlay" id="overlay" hidden></div>
+
+  <section class="dialog" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc" hidden>
+    <div class="dialog__surface">
+      <header class="dialog__header">
+        <h2 id="modal-title">Subscribe</h2>
+        <button class="icon-btn" data-close aria-label="Close modal">✕</button>
+      </header>
+      <p id="modal-desc">Get product updates and news. Keyboard focus is trapped inside while open.</p>
+      <form class="form">
+        <label>
+          Email
+          <input type="email" placeholder="name@example.com" required>
+        </label>
+        <div class="actions">
+          <button class="btn primary" type="submit">Subscribe</button>
+          <button class="btn" type="button" data-close>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-describedby="drawer-desc" hidden>
+    <div class="drawer__surface">
+      <header class="drawer__header">
+        <h2 id="drawer-title">Quick Menu</h2>
+        <button class="icon-btn" data-close aria-label="Close drawer">✕</button>
+      </header>
+      <p id="drawer-desc">This drawer slides in from the right. Focus stays within until closed.</p>
+      <nav class="drawer__nav">
+        <a href="#" class="link">Dashboard</a>
+        <a href="#" class="link">Projects</a>
+        <a href="#" class="link">Settings</a>
+      </nav>
+      <div class="drawer__actions">
+        <button class="btn primary">New Project</button>
+        <button class="btn" data-close>Close</button>
+      </div>
+    </div>
+  </aside>
+
+  <script src="app.js"></script>
+</body>
+</html>
