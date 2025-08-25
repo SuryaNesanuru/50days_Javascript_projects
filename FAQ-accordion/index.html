@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FAQ Accordion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <h1>Frequently Asked Questions</h1>
+      <p>Find quick answers below. Select a question to expand its answer.</p>
+    </header>
+
+    <section class="accordion" aria-label="FAQ">
+      <article class="item">
+        <h2 class="header">
+          <button class="trigger" aria-expanded="false" aria-controls="panel-1" id="accordion-1">
+            <span class="q">What is your return policy?</span>
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="plus"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 24 24" class="minus"><path d="M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+            </span>
+          </button>
+        </h2>
+        <div id="panel-1" class="panel" role="region" aria-labelledby="accordion-1" hidden>
+          <div class="content">
+            <p>We offer a 30‑day return window on eligible items in original condition with proof of purchase. Refunds are issued to the original payment method.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="item">
+        <h2 class="header">
+          <button class="trigger" aria-expanded="false" aria-controls="panel-2" id="accordion-2">
+            <span class="q">Do you ship internationally?</span>
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="plus"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 24 24" class="minus"><path d="M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+            </span>
+          </button>
+        </h2>
+        <div id="panel-2" class="panel" role="region" aria-labelledby="accordion-2" hidden>
+          <div class="content">
+            <p>Yes. Shipping rates and delivery times vary by destination and are calculated at checkout. Duties or taxes may be collected by local authorities.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="item">
+        <h2 class="header">
+          <button class="trigger" aria-expanded="false" aria-controls="panel-3" id="accordion-3">
+            <span class="q">How can I track my order?</span>
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="plus"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 24 24" class="minus"><path d="M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+            </span>
+          </button>
+        </h2>
+        <div id="panel-3" class="panel" role="region" aria-labelledby="accordion-3" hidden>
+          <div class="content">
+            <p>After your order ships, a tracking link is emailed to you. You can also find it anytime in your account’s orders section.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="item">
+        <h2 class="header">
+          <button class="trigger" aria-expanded="false" aria-controls="panel-4" id="accordion-4">
+            <span class="q">Can I change or cancel my order?</span>
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="plus"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 24 24" class="minus"><path d="M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+            </span>
+          </button>
+        </h2>
+        <div id="panel-4" class="panel" role="region" aria-labelledby="accordion-4" hidden>
+          <div class="content">
+            <p>Orders are processed quickly. If you need a change or cancellation, contact support as soon as possible and we’ll do our best to accommodate.</p>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
