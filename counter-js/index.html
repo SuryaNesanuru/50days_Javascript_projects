@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Counter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="card" aria-labelledby="counter-title">
+    <h1 id="counter-title" class="title">Counter</h1>
+    <div role="status" aria-live="polite" aria-atomic="true" class="value" id="count">0</div>
+    <div class="row">
+      <button type="button" class="dec" id="decrement" aria-describedby="dec-desc">− Decrement</button>
+      <button type="button" class="reset" id="reset" aria-describedby="reset-desc">Reset</button>
+      <button type="button" class="inc" id="increment" aria-describedby="inc-desc">+ Increment</button>
+    </div>
+    <p id="dec-desc" class="sr">Decrease the count by one</p>
+    <p id="reset-desc" class="sr">Set the count to zero</p>
+    <p id="inc-desc" class="sr">Increase the count by one</p>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
