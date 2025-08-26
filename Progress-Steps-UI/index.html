@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Progress Steps UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <h1>Setup your workspace</h1>
+      <p>Follow the steps. Progress updates as each step completes.</p>
+    </header>
+
+    <section class="stepper" role="group" aria-label="Progress steps">
+      <div class="rail">
+        <div class="meter" id="meter"></div>
+      </div>
+      <ol class="steps" id="steps">
+        <li class="step current" data-index="0">
+          <button class="pill" role="tab" aria-selected="true" aria-controls="panel-0" id="tab-0">
+            <span class="icon">1</span>
+            <span class="label">
+              Account
+              <small>Create or sign in</small>
+            </span>
+          </button>
+        </li>
+        <li class="step" data-index="1">
+          <button class="pill" role="tab" aria-selected="false" aria-controls="panel-1" id="tab-1">
+            <span class="icon">2</span>
+            <span class="label">
+              Profile
+              <small>Basics and avatar</small>
+            </span>
+          </button>
+        </li>
+        <li class="step" data-index="2">
+          <button class="pill" role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2">
+            <span class="icon">3</span>
+            <span class="label">
+              Preferences
+              <small>Theme & notices</small>
+            </span>
+          </button>
+        </li>
+        <li class="step" data-index="3">
+          <button class="pill" role="tab" aria-selected="false" aria-controls="panel-3" id="tab-3">
+            <span class="icon">4</span>
+            <span class="label">
+              Summary
+              <small>Confirm details</small>
+            </span>
+          </button>
+        </li>
+      </ol>
+    </section>
+
+    <section class="panels">
+      <div class="panel current" id="panel-0" role="tabpanel" aria-labelledby="tab-0">
+        <h2>Account</h2>
+        <div class="grid">
+          <label>Email <input type="email" placeholder="name@example.com"></label>
+          <label>Password <input type="password" placeholder="••••••••"></label>
+        </div>
+      </div>
+      <div class="panel" id="panel-1" role="tabpanel" aria-labelledby="tab-1" hidden>
+        <h2>Profile</h2>
+        <div class="grid">
+          <label>Display name <input type="text" placeholder="Alex"></label>
+          <label>Avatar URL <input type="url" placeholder="https://..."></label>
+        </div>
+      </div>
+      <div class="panel" id="panel-2" role="tabpanel" aria-labelledby="tab-2" hidden>
+        <h2>Preferences</h2>
+        <div class="grid">
+          <label><input type="checkbox"> Dark mode</label>
+          <label><input type="checkbox"> Email notifications</label>
+        </div>
+      </div>
+      <div class="panel" id="panel-3" role="tabpanel" aria-labelledby="tab-3" hidden>
+        <h2>Summary</h2>
+        <p>Review and confirm your details, then submit.</p>
+      </div>
+    </section>
+
+    <footer class="actions">
+      <button class="btn" id="back" disabled>Back</button>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="skip">Skip</button>
+      <button class="btn primary" id="next">Next</button>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
