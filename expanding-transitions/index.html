@@ -1,0 +1,85 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Expanding Cards</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <h1>Explore Collections</h1>
+      <p>Select a card to expand and reveal more details.</p>
+    </header>
+
+    <section class="grid" id="grid" aria-label="Expanding cards">
+      <article class="card current" tabindex="0" data-index="0" style="--img:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop')">
+        <div class="scrim"></div>
+        <div class="head">
+          <h2>Alpine Lights</h2>
+          <span class="tag">Nature</span>
+        </div>
+        <div class="body">
+          <p>Ethereal auroras across snow-capped ranges, captured at blue hour.</p>
+          <button class="btn ghost">View gallery</button>
+        </div>
+      </article>
+
+      <article class="card" tabindex="0" data-index="1" style="--img:url('https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=1200&auto=format&fit=crop')">
+        <div class="scrim"></div>
+        <div class="head">
+          <h2>Desert Trails</h2>
+          <span class="tag">Travel</span>
+        </div>
+        <div class="body">
+          <p>Endless dunes and caravan shadows through the golden hour.</p>
+          <button class="btn ghost">Read story</button>
+        </div>
+      </article>
+
+      <article class="card" tabindex="0" data-index="2" style="--img:url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200&auto=format&fit=crop')">
+        <div class="scrim"></div>
+        <div class="head">
+          <h2>City After Rain</h2>
+          <span class="tag">Street</span>
+        </div>
+        <div class="body">
+          <p>Reflections and neon trails in a bustling nightscape.</p>
+          <button class="btn ghost">Open journal</button>
+        </div>
+      </article>
+
+      <article class="card" tabindex="0" data-index="3" style="--img:url('https://images.unsplash.com/photo-1470770903676-69b98201ea1c?q=80&w=1200&auto=format&fit=crop')">
+        <div class="scrim"></div>
+        <div class="head">
+          <h2>Coastal Dawn</h2>
+          <span class="tag">Seascape</span>
+        </div>
+        <div class="body">
+          <p>First light over rugged cliffs and tide pools in bloom.</p>
+          <button class="btn ghost">See itinerary</button>
+        </div>
+      </article>
+
+      <article class="card" tabindex="0" data-index="4" style="--img:url('https://images.unsplash.com/photo-1511765224389-37f0e77cf0eb?q=80&w=1200&auto=format&fit=crop')">
+        <div class="scrim"></div>
+        <div class="head">
+          <h2>Forest Haze</h2>
+          <span class="tag">Wildlife</span>
+        </div>
+        <div class="body">
+          <p>Misty pines and hidden trails where silence breathes.</p>
+          <button class="btn ghost">Start trail</button>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
