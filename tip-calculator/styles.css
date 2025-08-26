@@ -1,0 +1,167 @@
+:root{
+  --bg:#0a0f1e; --surface:#0f1426; --card:#101933; --glass:#0f1529cc;
+  --text:#e6e7ea; --muted:#98a2b3; --dim:#6b7280;
+  --brand:#6ee7b7; --brand-2:#38bdf8; --accent:#f59e0b; --error:#ef4444; --success:#10b981;
+  --border:rgba(255,255,255,.08); --ring:#8b5cf6;
+  --radius:18px; --shadow:0 20px 50px rgba(0,0,0,.4);
+  --ease:cubic-bezier(.2,.7,.2,1); --spring:cubic-bezier(.34,1.56,.64,1);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background: 
+    radial-gradient(1400px 800px at 10% 10%, rgba(56,189,248,.06), transparent 70%),
+    radial-gradient(1200px 700px at 90% 20%, rgba(139,92,246,.04), transparent 70%),
+    radial-gradient(800px 600px at 50% 80%, rgba(110,231,183,.08), transparent 60%),
+    linear-gradient(180deg,#0a0f1e,#0b1020);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial,sans-serif;
+  display:grid; place-items:center; padding:20px;
+}
+
+.shell{width:min(460px,100%)}
+
+.calculator{
+  background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+  backdrop-filter: blur(20px);
+  border:1px solid var(--border);
+  border-radius: calc(var(--radius) + 8px);
+  box-shadow: var(--shadow);
+  padding:24px;
+  position:relative;
+  overflow:hidden;
+}
+
+.calculator::before{
+  content:"";
+  position:absolute; inset:0;
+  background: 
+    radial-gradient(400px 200px at 20% 0%, rgba(110,231,183,.15), transparent 60%),
+    radial-gradient(400px 200px at 80% 100%, rgba(56,189,248,.12), transparent 60%);
+  opacity:.6; z-index:-1; pointer-events:none;
+}
+
+.header{
+  display:flex; align-items:center; gap:14px; margin-bottom:24px;
+  padding-bottom:18px; border-bottom:1px solid var(--border);
+}
+.header .icon{
+  width:48px; height:48px; border-radius:12px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  display:grid; place-items:center; color:#0a0f1e;
+}
+.header .icon svg{width:24px; height:24px}
+.header h1{margin:0; font-size:22px; font-weight:800; letter-spacing:.3px}
+.header p{margin:0; color:var(--muted); font-size:14px}
+
+.input-group{position:relative; margin-bottom:20px}
+.section-label{display:block; margin-bottom:12px; font-weight:600; color:var(--text)}
+label{display:block; margin-bottom:8px; font-weight:600; color:var(--text)}
+
+.input-wrapper{
+  position:relative; display:flex; align-items:center;
+  background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border:1px solid var(--border); border-radius:12px;
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+.input-wrapper:focus-within{
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 20%, transparent);
+}
+
+.currency{
+  padding-left:14px; color:var(--brand); font-weight:700; font-size:18px;
+}
+.icon-people{
+  width:20px; height:20px; margin-left:14px; color:var(--muted);
+}
+
+input{
+  width:100%; padding:14px 16px; background:transparent; border:0; color:var(--text);
+  font-size:16px; font-weight:600; outline:none; font-family:inherit;
+}
+input::placeholder{color:var(--dim); font-weight:500}
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
+input[type=number]{-moz-appearance:textfield}
+
+.error{
+  position:absolute; bottom:-22px; left:0; color:var(--error); font-size:12px;
+  opacity:0; transform:translateY(-4px); transition:all .25s var(--ease);
+}
+.error.show{opacity:1; transform:translateY(0)}
+
+.tip-section{margin-bottom:20px}
+.tip-grid{
+  display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;
+}
+.tip-btn{
+  appearance:none; border:1px solid var(--border);
+  background: linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+  color:var(--text); padding:12px; border-radius:10px; cursor:pointer;
+  font-weight:700; font-size:16px; transition:all .2s ease;
+}
+.tip-btn:hover{
+  transform:translateY(-1px); border-color:rgba(255,255,255,.2);
+}
+.tip-btn.active{
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#0a0f1e; border-color:transparent; transform:translateY(-1px);
+}
+
+.custom-tip{
+  appearance:none; border:1px solid var(--border);
+  background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  color:var(--text); padding:12px; border-radius:10px;
+  font-weight:600; text-align:center; outline:none; font-family:inherit;
+}
+.custom-tip:focus{
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 20%, transparent);
+}
+.custom-tip::placeholder{color:var(--dim); font-weight:500}
+
+.results{
+  background: linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+  border:1px solid var(--border); border-radius:14px; padding:18px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  opacity:0; transform:translateY(12px); transition:all .35s var(--ease);
+}
+.results.show{opacity:1; transform:translateY(0)}
+
+.result-card{margin-bottom:16px}
+.result-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+.result-row.total{margin-bottom:0}
+.result-label span{font-weight:600}
+.result-label small{color:var(--muted); font-size:12px; display:block; margin-top:2px}
+.result-value{
+  font-weight:800; font-size:18px; color:var(--brand);
+  font-variant-numeric:tabular-nums;
+}
+.result-value.grand{
+  font-size:24px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+
+.divider{
+  height:1px; background:var(--border); margin:16px 0;
+}
+
+.reset-btn{
+  width:100%; appearance:none; border:1px solid var(--border);
+  background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  color:var(--text); padding:12px; border-radius:10px; cursor:pointer;
+  font-weight:600; transition:all .2s ease;
+}
+.reset-btn:hover{
+  transform:translateY(-1px); border-color:rgba(255,255,255,.25);
+}
+
+:focus-visible{outline:2px solid var(--ring); outline-offset:2px}
+
+@media (max-width:480px){
+  .calculator{padding:18px}
+  .tip-grid{grid-template-columns: repeat(2, 1fr)}
+}
