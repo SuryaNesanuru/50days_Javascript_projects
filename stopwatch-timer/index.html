@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Precision Timer & Stopwatch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="header">
+      <div class="brand">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Precision Timer</h1>
+          <p>Professional stopwatch & countdown timer</p>
+        </div>
+      </div>
+      <div class="mode-toggle" id="mode-toggle" role="tablist" aria-label="Timer mode">
+        <button class="mode-btn active" role="tab" aria-selected="true" data-mode="stopwatch" id="tab-stopwatch">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.962 8.962 0 0012 4c-4.97 0-9 4.03-9 9s4.02 9 9 9a8.994 8.994 0 007.03-14.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" fill="currentColor"/>
+          </svg>
+          Stopwatch
+        </button>
+        <button class="mode-btn" role="tab" aria-selected="false" data-mode="timer" id="tab-timer">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="currentColor"/>
+          </svg>
+          Timer
+        </button>
+      </div>
+    </header>
+
+    <section class="content">
+      <!-- Stopwatch Panel -->
+      <div class="panel current" id="panel-stopwatch" role="tabpanel" aria-labelledby="tab-stopwatch">
+        <div class="display-container">
+          <div class="time-display" id="stopwatch-display" aria-live="polite">
+            <span class="time-segment">00</span>
+            <span class="separator">:</span>
+            <span class="time-segment">00</span>
+            <span class="separator">:</span>
+            <span class="time-segment">00</span>
+            <span class="separator ms-sep">.</span>
+            <span class="time-segment ms">000</span>
+          </div>
+          <div class="status-indicator" id="stopwatch-status">Ready</div>
+        </div>
+
+        <div class="controls">
+          <button class="btn primary" id="stopwatch-start" aria-describedby="start-desc">
+            <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z" fill="currentColor"/>
+            </svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true" style="display:none">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+            </svg>
+            Start
+          </button>
+          <button class="btn" id="stopwatch-lap" disabled aria-describedby="lap-desc">Lap</button>
+          <button class="btn" id="stopwatch-reset" aria-describedby="reset-desc">Reset</button>
+        </div>
+
+        <div class="laps-container" id="laps-container">
+          <div class="laps-header">
+            <h3>Lap Times</h3>
+            <span class="lap-count" id="lap-count">0 laps</span>
+          </div>
+          <div class="laps-list" id="laps-list"></div>
+        </div>
+      </div>
+
+      <!-- Timer Panel -->
+      <div class="panel" id="panel-timer" role="tabpanel" aria-labelledby="tab-timer" hidden>
+        <div class="timer-input" id="timer-input">
+          <div class="input-grid">
+            <div class="input-group">
+              <label>Hours</label>
+              <input type="number" id="hours" min="0" max="23" value="0" aria-label="Hours">
+            </div>
+            <div class="input-group">
+              <label>Minutes</label>
+              <input type="number" id="minutes" min="0" max="59" value="5" aria-label="Minutes">
+            </div>
+            <div class="input-group">
+              <label>Seconds</label>
+              <input type="number" id="seconds" min="0" max="59" value="0" aria-label="Seconds">
+            </div>
+          </div>
+          <div class="presets">
+            <button class="preset-btn" data-time="300">5m</button>
+            <button class="preset-btn" data-time="600">10m</button>
+            <button class="preset-btn" data-time="900">15m</button>
+            <button class="preset-btn" data-time="1800">30m</button>
+          </div>
+        </div>
+
+        <div class="display-container timer-display-container" id="timer-display-container" style="display:none">
+          <div class="progress-ring">
+            <svg class="progress-ring-svg" width="200" height="200">
+              <circle class="progress-ring-circle-bg" cx="100" cy="100" r="90"></circle>
+              <circle class="progress-ring-circle" cx="100" cy="100" r="90" id="progress-circle"></circle>
+            </svg>
+            <div class="time-display timer-time" id="timer-display" aria-live="polite">
+              <span class="time-segment">05</span>
+              <span class="separator">:</span>
+              <span class="time-segment">00</span>
+            </div>
+          </div>
+          <div class="status-indicator" id="timer-status">Ready</div>
+        </div>
+
+        <div class="controls">
+          <button class="btn primary" id="timer-start">
+            <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z" fill="currentColor"/>
+            </svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true" style="display:none">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+            </svg>
+            Start
+          </button>
+          <button class="btn" id="timer-cancel">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="shortcuts">
+      <div class="shortcut-group">
+        <kbd>Space</kbd> Start/Pause
+      </div>
+      <div class="shortcut-group">
+        <kbd>L</kbd> Lap
+      </div>
+      <div class="shortcut-group">
+        <kbd>R</kbd> Reset
+      </div>
+      <div class="shortcut-group">
+        <kbd>Tab</kbd> Switch Mode
+      </div>
+    </footer>
+  </main>
+
+  <!-- Notification -->
+  <div class="notification" id="notification" role="alert" aria-live="assertive">
+    <div class="notification-content">
+      <div class="notification-icon">⏰</div>
+      <div>
+        <div class="notification-title">Timer Finished!</div>
+        <div class="notification-message">Your countdown has completed.</div>
+      </div>
+    </div>
+    <button class="notification-close" aria-label="Close notification">✕</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
