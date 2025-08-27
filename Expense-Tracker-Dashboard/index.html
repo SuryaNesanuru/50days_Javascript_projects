@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Expense Tracker Dashboard</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div class="container">
+		<header class="header">
+			<h1>Expense Tracker</h1>
+			<div class="totals">
+				<div class="card">
+					<span class="label">Balance</span>
+					<span id="balance" class="value">0</span>
+				</div>
+				<div class="card income">
+					<span class="label">Total Income</span>
+					<span id="totalIncome" class="value">0</span>
+				</div>
+				<div class="card expense">
+					<span class="label">Total Expense</span>
+					<span id="totalExpense" class="value">0</span>
+				</div>
+			</div>
+		</header>
+
+		<main class="main">
+			<section class="entry-section">
+				<form id="entryForm" class="entry-form">
+					<input type="text" id="description" placeholder="Description" required>
+					<input type="number" id="amount" placeholder="Amount" step="0.01" required>
+					<select id="type">
+						<option value="income">Income</option>
+						<option value="expense">Expense</option>
+					</select>
+					<input type="date" id="date">
+					<button type="submit" class="btn primary">Add</button>
+				</form>
+				<div class="actions">
+					<button id="exportCsvBtn" class="btn">Export CSV</button>
+					<button id="clearAllBtn" class="btn danger">Clear All</button>
+				</div>
+			</section>
+
+			<section class="content">
+				<div class="list-card">
+					<h2>Transactions</h2>
+					<ul id="transactionList" class="transaction-list"></ul>
+				</div>
+				<div class="chart-card">
+					<h2>Monthly Spending</h2>
+					<canvas id="monthlyChart" height="220"></canvas>
+				</div>
+			</section>
+		</main>
+
+		<footer class="footer">
+			<p>Data stored locally in your browser</p>
+		</footer>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="script.js"></script>
+</body>
+</html>
