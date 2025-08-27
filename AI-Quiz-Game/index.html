@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>AI-Powered Quiz Game</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div class="container">
+		<header class="header">
+			<h1>AI-Powered Quiz</h1>
+			<div class="controls">
+				<select id="category"></select>
+				<select id="difficulty">
+					<option value="">Any Difficulty</option>
+					<option value="easy">Easy</option>
+					<option value="medium">Medium</option>
+					<option value="hard">Hard</option>
+				</select>
+				<select id="amount">
+					<option value="5">5 Qs</option>
+					<option value="10" selected>10 Qs</option>
+					<option value="15">15 Qs</option>
+				</select>
+				<button id="startBtn" class="btn primary">Start Quiz</button>
+			</div>
+		</header>
+
+		<main class="main">
+			<section class="quiz-card" id="quizCard" hidden>
+				<div class="quiz-meta">
+					<div>Question <span id="qIndex">1</span>/<span id="qTotal">10</span></div>
+					<div class="timer"><span id="timer">30</span>s</div>
+				</div>
+				<h2 id="questionText">Question text</h2>
+				<ul id="answers" class="answers"></ul>
+				<div class="actions">
+					<button id="hintBtn" class="btn">Get Hint</button>
+					<button id="nextBtn" class="btn" disabled>Next</button>
+				</div>
+				<p id="hintText" class="hint" hidden></p>
+			</section>
+
+			<section class="result-card" id="resultCard" hidden>
+				<h2>Quiz Complete!</h2>
+				<p>Your score: <strong id="scoreText">0</strong></p>
+				<form id="saveScoreForm" class="save-form">
+					<input id="playerName" placeholder="Your name" maxlength="16" required>
+					<button class="btn primary" type="submit">Save to Leaderboard</button>
+				</form>
+				<button id="playAgainBtn" class="btn">Play Again</button>
+			</section>
+
+			<section class="leaderboard-card">
+				<h2>Leaderboard</h2>
+				<ol id="leaderboard"></ol>
+			</section>
+		</main>
+
+		<footer class="footer">
+			<p>Questions by Open Trivia DB</p>
+		</footer>
+	</div>
+
+	<script src="config.js"></script>
+	<script src="script.js"></script>
+</body>
+</html>

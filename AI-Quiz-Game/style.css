@@ -1,0 +1,28 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#0ea5e9,#9333ea);min-height:100vh;color:#0f172a}
+.container{max-width:960px;margin:0 auto;padding:24px}
+.header{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;color:#fff}
+.header h1{font-size:28px}
+.controls{display:flex;gap:10px;flex-wrap:wrap}
+select,button,input{padding:10px 12px;border-radius:10px;border:1px solid #cbd5e1;font-size:14px}
+.btn{background:#f8fafc;color:#0f172a;font-weight:700;cursor:pointer}
+.btn.primary{background:#0ea5e9;border-color:#0ea5e9;color:#fff}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+
+.main{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.quiz-card,.leaderboard-card,.result-card{background:#ffffffd9;backdrop-filter:blur(8px);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(2,8,23,.12)}
+.quiz-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;color:#334155;font-weight:700}
+.timer{background:#fee2e2;color:#b91c1c;border-radius:999px;padding:4px 10px}
+#questionText{font-size:18px;margin:8px 0 12px}
+.answers{list-style:none;display:flex;flex-direction:column;gap:8px}
+.answer{padding:12px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;cursor:pointer}
+.answer.correct{border-color:#16a34a;background:#dcfce7}
+.answer.wrong{border-color:#dc2626;background:#fee2e2}
+.actions{display:flex;gap:10px;margin-top:10px}
+.hint{margin-top:8px;color:#6b21a8}
+.save-form{display:flex;gap:10px;margin:12px 0}
+.footer{margin-top:20px;text-align:center;color:#e2e8f0}
+
+@media(max-width:900px){
+	.main{grid-template-columns:1fr}
+}
