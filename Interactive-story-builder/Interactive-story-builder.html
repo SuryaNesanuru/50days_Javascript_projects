@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Story Builder</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background:#f5f5f5; }
+    header { background: #333; color: white; padding: 1em; text-align: center; }
+    .container { display: flex; height: calc(100vh - 60px); }
+    .editor, .preview { flex: 1; padding: 1em; overflow-y:auto; }
+    .editor { border-right: 2px solid #ccc; }
+    h2 { margin-top: 0; }
+    .node { background:white; padding:0.5em; margin:0.5em 0; border-radius:5px; border:1px solid #ccc; }
+    .choice { margin-left:1em; color:#555; }
+    button { margin:0.2em; padding:0.4em 0.8em; border:none; border-radius:4px; cursor:pointer; }
+    button:hover { opacity:0.8; }
+    .btn-primary { background:#007bff; color:white; }
+    .btn-danger { background:#dc3545; color:white; }
+    .choice-btn { display:block; margin:0.3em 0; background:#eee; padding:0.4em; border-radius:3px; cursor:pointer; }
+    .choice-btn:hover { background:#ddd; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Interactive Story Builder</h1>
+  </header>
+  <div class="container">
+    <div class="editor">
+      <h2>Story Nodes</h2>
+      <div id="nodes"></div>
+      <button class="btn-primary" onclick="addNode()">Add Node</button>
+      <button class="btn-primary" onclick="exportJSON()">Export JSON</button>
+      <input type="file" id="fileInput" />
+    </div>
+    <div class="preview">
+      <h2>Preview</h2>
+      <div id="preview"></div>
+    </div>
+  </div>
+
+  <script>
+    let story = {};
+    let nodeCounter = 1;
+
+    function addNode() {
+      const id = "node" + nodeCounter++;
+      story[id] = { text: "", choices: [] };
+      renderEditor();
+      renderPreview();
+    }
+
+    function addChoice(nodeId) {
+      story[nodeId].choices.push({ text: "", target: null });
+      renderEditor();
+      renderPreview();
+    }
+
+    function deleteNode(nodeId) {
+      delete story[nodeId];
+      // Remove references in choices
+      for (let n in story) {
+        story[n].choices = story[n].choices.filter(c => c.target !== nodeId);
+      }
+      renderEditor();
+      renderPreview();
+    }
+
+    function updateNodeText(nodeId, val) {
+      story[nodeId].text = val;
+      renderPreview();
+    }
+
+    function updateChoiceText(nodeId, idx, val) {
+      story[nodeId].choices[idx].text = val;
+      renderPreview();
+    }
+
+    function updateChoiceTarget(nodeId, idx, val) {
+      story[nodeId].choices[idx].target = val;
+      renderPreview();
+    }
+
+    function renderEditor() {
+      const container = document.getElementById("nodes");
+      container.innerHTML = "";
+      for (let id in story) {
+        const node = story[id];
+        const div = document.createElement("div");
+        div.className = "node";
+        div.innerHTML = `
+          <label>${id}</label><br>
+          <textarea rows="2" cols="30" onchange="updateNodeText('${id}', this.value)">${node.text}</textarea>
+          <button class="btn-primary" onclick="addChoice('${id}')">Add Choice</button>
+          <button class="btn-danger" onclick="deleteNode('${id}')">Delete</button>
+          <div>
+            ${node.choices.map((c, idx) => `
+              <div class="choice">
+                Choice: <input type="text" value="${c.text}" onchange="updateChoiceText('${id}',${idx},this.value)">
+                → <select onchange="updateChoiceTarget('${id}',${idx},this.value)">
+                  <option value="">--Target--</option>
+                  ${Object.keys(story).map(nid => `<option value="${nid}" ${c.target===nid?"selected":""}>${nid}</option>`).join("")}
+                </select>
+              </div>`).join("")}
+          </div>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    function renderPreview() {
+      const container = document.getElementById("preview");
+      container.innerHTML = "";
+      if(Object.keys(story).length === 0) return;
+      let start = Object.keys(story)[0];
+      showNode(start, container);
+    }
+
+    function showNode(nodeId, container) {
+      const node = story[nodeId];
+      if (!node) return;
+      const div = document.createElement("div");
+      div.className = "node";
+      div.innerHTML = `<p>${node.text}</p>`;
+      node.choices.forEach((c, idx) => {
+        if(c.text){
+          const btn = document.createElement("div");
+          btn.className = "choice-btn";
+          btn.textContent = c.text;
+          btn.onclick = () => {
+            container.innerHTML = "";
+            showNode(c.target, container);
+          };
+          div.appendChild(btn);
+        }
+      });
+      container.appendChild(div);
+    }
+
+    function exportJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(story, null, 2));
+      const dl = document.createElement("a");
+      dl.setAttribute("href", dataStr);
+      dl.setAttribute("download", "story.json");
+      document.body.appendChild(dl);
+      dl.click();
+      dl.remove();
+    }
+
+    document.getElementById("fileInput").addEventListener("change", function(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt){
+        story = JSON.parse(evt.target.result);
+        renderEditor();
+        renderPreview();
+      }
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>
