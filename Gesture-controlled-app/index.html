@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gesture-Controlled Drawing App</title>
+<style>
+  :root{--bg:#0f1724;--panel:#0b1220;--muted:#9aa4d6;--accent:#5b8cff}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#071028,#0b1220);color:#e6eef8}
+  .app{display:flex;flex-direction:column;height:100%}
+  header{padding:12px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .title{font-weight:700}
+  .toolbar{display:flex;gap:8px;align-items:center;margin-left:auto}
+  .panel{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:10px;display:flex;gap:8px;align-items:center}
+  button,input,select{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:8px;border-radius:8px;cursor:pointer}
+  button:hover,input:hover,select:hover{border-color:rgba(91,140,255,0.35)}
+  #canvasWrap{flex:1;display:grid;grid-template-columns:1fr 260px;gap:12px;padding:14px}
+  .left{background:linear-gradient(180deg, #071028, #081230);border-radius:12px;padding:12px;display:flex;flex-direction:column}
+  canvas{flex:1;background:#fff;border-radius:8px;touch-action:none}
+  .right{background:rgba(255,255,255,0.02);padding:12px;border-radius:12px;min-width:240px}
+  .controls{display:flex;flex-direction:column;gap:10px}
+  label{font-size:12px;color:var(--muted)}
+  .hint{font-size:13px;color:#b9c5ee;background:rgba(91,140,255,0.06);padding:8px;border-radius:8px}
+  .kbd{display:inline-block;background:rgba(255,255,255,0.03);padding:4px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);font-weight:600}
+  footer{padding:10px 18px;font-size:13px;color:var(--muted);border-top:1px solid rgba(255,255,255,0.02)}
+  @media(max-width:900px){#canvasWrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="title">Gesture-Controlled Drawing App</div>
+    <div class="toolbar">
+      <div class="panel">
+        <button id="undo">Undo</button>
+        <button id="clear">Clear</button>
+        <button id="save">Save PNG</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="canvasWrap">
+    <div class="left">
+      <canvas id="c" width="1200" height="700"></canvas>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <div class="hint">Hold <span class="kbd">Left mouse</span> to draw — hold <span class="kbd">Right mouse</span> to erase.<br>
+        On touch: <em>long-press</em> toggles erase while held. Press <span class="kbd">C</span>/<span class="kbd">S</span>/<span class="kbd">T</span> then click to place Circle/Square/Triangle.
+        </div>
+      </div>
+    </div>
+    <aside class="right">
+      <div class="controls">
+        <div>
+          <label>Brush Color</label><br>
+          <input type="color" id="color" value="#1d4ed8">
+        </div>
+        <div>
+          <label>Brush Size: <span id="sizeLabel">18</span> px</label><br>
+          <input id="size" type="range" min="1" max="80" value="18">
+        </div>
+        <div>
+          <label>Eraser Size: <span id="esLabel">30</span> px</label><br>
+          <input id="esize" type="range" min="4" max="120" value="30">
+        </div>
+        <div>
+          <label>Shape Mode</label><br>
+          <select id="shapeMode">
+            <option value="none">None (free draw)</option>
+            <option value="circle">Circle (C)</option>
+            <option value="square">Square (S)</option>
+            <option value="triangle">Triangle (T)</option>
+          </select>
+        </div>
+        <div>
+          <label>Composite</label><br>
+          <select id="comp">
+            <option value="source-over">Draw (source-over)</option>
+            <option value="multiply">Multiply</option>
+            <option value="screen">Screen</option>
+            <option value="lighter">Lighter</option>
+          </select>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0">
+
+      <div>
+        <strong>Shortcuts</strong>
+        <ul>
+          <li><span class="kbd">C</span> Circle — then click canvas to place</li>
+          <li><span class="kbd">S</span> Square</li>
+          <li><span class="kbd">T</span> Triangle</li>
+          <li><span class="kbd">Esc</span> Cancel shape mode</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <footer>Built with HTML, CSS & vanilla JS — Touch & Pointer friendly.</footer>
+</div>
+
+<script>
+// App state
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d', { willReadFrequently: false });
+const colorEl = document.getElementById('color');
+const sizeEl = document.getElementById('size');
+const sizeLabel = document.getElementById('sizeLabel');
+const esizeEl = document.getElementById('esize');
+const esLabel = document.getElementById('esLabel');
+const undoBtn = document.getElementById('undo');
+const clearBtn = document.getElementById('clear');
+const saveBtn = document.getElementById('save');
+const shapeModeSel = document.getElementById('shapeMode');
+const compSel = document.getElementById('comp');
+
+let drawing = false;
+let erasing = false;
+let last = {x:0,y:0};
+let pointerId = null;
+let undoStack = [];
+const MAX_UNDO = 20;
+let currentShape = 'none'; // 'circle','square','triangle' or 'none'
+let longPressTimer = null;
+let longPressActive = false;
+
+// Retina support
+function resizeCanvas(){
+  const ratio = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || 1200;
+  const h = canvas.clientHeight || 700;
+  canvas.width = w * ratio;
+  canvas.height = h * ratio;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  redrawBackground();
+}
+
+function redrawBackground(){
+  // If there's something in stack, restore last state
+  if(undoStack.length) {
+    const img = new Image(); img.onload = ()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
+    img.src = undoStack[undoStack.length-1];
+  } else {
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Initialize white background
+function initCanvas(){
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  saveState();
+}
+initCanvas();
+
+// Save state for undo
+function saveState(){
+  try{
+    const data = canvas.toDataURL('image/png');
+    undoStack.push(data);
+    if(undoStack.length>MAX_UNDO) undoStack.shift();
+  }catch(e){console.warn('Cannot save state',e)}
+}
+
+undoBtn.addEventListener('click', ()=>{
+  if(undoStack.length>1){
+    // pop current state
+    undoStack.pop();
+    const lastImg = undoStack[undoStack.length-1];
+    const img = new Image(); img.onload = ()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
+    img.src = lastImg;
+  } else {
+    ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); undoStack = []; saveState();
+  }
+});
+
+clearBtn.addEventListener('click', ()=>{ if(confirm('Clear canvas?')){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); undoStack=[]; saveState(); }});
+
+saveBtn.addEventListener('click', ()=>{
+  const url = canvas.toDataURL('image/png');
+  const a = document.createElement('a'); a.href = url; a.download = 'drawing.png'; a.click();
+});
+
+// drawing helpers
+function setDrawingStyle(){
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.globalCompositeOperation = compSel.value;
+}
+
+function beginStroke(x,y, isErase){
+  setDrawingStyle();
+  drawing = true;
+  last = {x,y};
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+}
+
+function continueStroke(x,y, isErase){
+  if(!drawing) return;
+  if(isErase){
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.lineWidth = parseInt(esizeEl.value,10);
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
+  } else {
+    ctx.globalCompositeOperation = compSel.value;
+    ctx.lineWidth = parseInt(sizeEl.value,10);
+    ctx.strokeStyle = colorEl.value;
+  }
+  ctx.lineTo(x,y);
+  ctx.stroke();
+  last = {x,y};
+}
+
+function endStroke(){
+  if(!drawing) return;
+  drawing = false;
+  ctx.closePath();
+  // restore composite
+  ctx.globalCompositeOperation = compSel.value;
+  saveState();
+}
+
+// Shape drawing (place on click)
+function drawShapeAt(x,y, shape){
+  setDrawingStyle();
+  ctx.save();
+  const sz = parseInt(sizeEl.value,10)*3; // shape size scale
+  ctx.fillStyle = colorEl.value;
+  ctx.strokeStyle = colorEl.value;
+  ctx.lineWidth = 2;
+  if(shape==='circle'){
+    ctx.beginPath(); ctx.arc(x,y,sz/2,0,Math.PI*2); ctx.fill(); ctx.closePath();
+  } else if(shape==='square'){
+    ctx.fillRect(x - sz/2, y - sz/2, sz, sz);
+  } else if(shape==='triangle'){
+    ctx.beginPath(); ctx.moveTo(x, y - sz/2); ctx.lineTo(x - sz/2, y + sz/2); ctx.lineTo(x + sz/2, y + sz/2); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+  saveState();
+}
+
+// Pointer events - unified for mouse/touch/pen
+canvas.addEventListener('pointerdown', (e)=>{
+  // ignore non-primary for mouse except right click handling
+  canvas.setPointerCapture(e.pointerId);
+  pointerId = e.pointerId;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+  // If shape mode selected, place shape on single click
+  if(shapeModeSel.value !== 'none' || currentShape !== 'none'){
+    const shape = currentShape !== 'none' ? currentShape : shapeModeSel.value;
+    if(shape && shape!=='none'){
+      drawShapeAt(x,y,shape);
+      return;
+    }
+  }
+
+  // Right mouse -> eraser (button === 2) or touch long-press
+  const isRight = (e.button === 2) || (e.pointerType==='mouse' && e.buttons===2);
+
+  // For touch, start a long-press timer to enter erase mode
+  if(e.pointerType==='touch'){
+    longPressTimer = setTimeout(()=>{ longPressActive = true; beginStroke(x,y,true); }, 600);
+  }
+
+  if(isRight){
+    // start erase
+    beginStroke(x,y,true);
+  } else if(e.pointerType!=='touch'){
+    beginStroke(x,y,false);
+  } else {
+    // touch short press -> draw
+    beginStroke(x,y,false);
+  }
+});
+
+canvas.addEventListener('pointermove', (e)=>{
+  if(e.pointerId !== pointerId) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+  if(longPressTimer && (Math.hypot(e.movementX||0, e.movementY||0) > 8)){ clearTimeout(longPressTimer); }
+  if(longPressActive){ continueStroke(x,y,true); }
+  else continueStroke(x,y,false);
+});
+
+canvas.addEventListener('pointerup', (e)=>{
+  canvas.releasePointerCapture(e.pointerId);
+  pointerId = null;
+  clearTimeout(longPressTimer); longPressTimer = null;
+  if(longPressActive){ endStroke(); longPressActive=false; return; }
+  endStroke();
+});
+
+canvas.addEventListener('pointercancel', (e)=>{ clearTimeout(longPressTimer); longPressTimer=null; longPressActive=false; endStroke(); });
+
+// Prevent context menu to allow right-click erase
+canvas.addEventListener('contextmenu', (e)=>{ e.preventDefault(); });
+
+// Keyboard shortcuts for shapes
+window.addEventListener('keydown', (e)=>{
+  if(e.key === 'c' || e.key === 'C') { currentShape = 'circle'; shapeModeSel.value='none'; showTempMessage('Circle mode: click canvas to place'); }
+  if(e.key === 's' || e.key === 'S') { currentShape = 'square'; shapeModeSel.value='none'; showTempMessage('Square mode: click canvas to place'); }
+  if(e.key === 't' || e.key === 'T') { currentShape = 'triangle'; shapeModeSel.value='none'; showTempMessage('Triangle mode: click canvas to place'); }
+  if(e.key === 'Escape') { currentShape = 'none'; shapeModeSel.value='none'; showTempMessage('Shape mode cancelled'); }
+});
+
+// Click to place shape when in keyboard-shape mode
+canvas.addEventListener('click', (e)=>{
+  if(currentShape==='none') return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+  drawShapeAt(x,y,currentShape);
+  currentShape = 'none';
+});
+
+// UI bindings
+sizeEl.addEventListener('input', ()=>{ sizeLabel.textContent = sizeEl.value; });
+esizeEl.addEventListener('input', ()=>{ esLabel.textContent = esizeEl.value; });
+compSel.addEventListener('change', ()=>{ ctx.globalCompositeOperation = compSel.value; });
+
+// small toaster message
+let msgTimer=null;
+function showTempMessage(txt){
+  if(msgTimer) clearTimeout(msgTimer);
+  const d = document.createElement('div'); d.textContent = txt;
+  d.style.position='fixed'; d.style.bottom='18px'; d.style.left='50%'; d.style.transform='translateX(-50%)';
+  d.style.background='rgba(20,25,45,0.95)'; d.style.padding='10px 14px'; d.style.border='1px solid rgba(91,140,255,0.15)'; d.style.borderRadius='8px'; d.style.zIndex=9999; d.style.color='#cfe0ff';
+  document.body.appendChild(d);
+  msgTimer = setTimeout(()=>{ d.remove(); msgTimer=null; }, 1500);
+}
+
+// Save initial white state in undo
+saveState();
+</script>
+</body>
+</html>
