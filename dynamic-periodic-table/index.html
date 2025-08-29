@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Periodic Table Explorer</title>
+  <style>
+    :root{
+      --bg:#0f1220; --card:#161a2f; --muted:#8d93b5; --text:#e6e8ff; --accent:#6c8cff;
+      --metal:#3a7bd5; --nonmetal:#27ae60; --metalloid:#c29f37; --noble:#8e44ad; --halogen:#e67e22;
+      --alkali:#e74c3c; --alkaline:#f1c40f; --transition:#3498db; --lanth:#9b59b6; --act:#d35400; --post:#16a085;
+      --gas:#2ecc71; --liquid:#00bcd4; --solid:#bdc3c7; --unknown:#7f8c8d;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0b0e1a, #10152a);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    header{padding:20px 24px;border-bottom:1px solid #202545;display:flex;gap:14px;align-items:center;justify-content:space-between}
+    .title{font-weight:800;letter-spacing:0.4px;font-size:20px}
+    .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    input, select, button{background:#121733;border:1px solid #29305a;color:var(--text);padding:10px 12px;border-radius:10px;outline:none}
+    input::placeholder{color:#8a90b8}
+    button{cursor:pointer}
+    .wrap{padding:18px}
+    .legend{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 18px}
+    .pill{display:flex;align-items:center;gap:8px;background:#121733;border:1px solid #283058;border-radius:999px;padding:6px 10px;font-size:12px;color:#cfd3ff}
+    .dot{width:10px;height:10px;border-radius:50%}
+
+    .grid{display:grid;grid-template-columns:repeat(18, minmax(48px,1fr));grid-auto-rows:64px;gap:8px;background:#0e1328;border:1px solid #222a54;border-radius:16px;padding:12px;position:relative}
+
+    .cell{position:relative;background:var(--card);border:1px solid #232a57;border-radius:12px;padding:6px;overflow:hidden;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease}
+    .cell:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 10px 24px rgba(0,0,0,.3);border-color:#3a4290;z-index:2}
+    .cell .num{position:absolute;top:6px;left:8px;font-size:10px;color:#9aa2d8}
+    .cell .sym{display:block;font-weight:800;font-size:18px;letter-spacing:.3px}
+    .cell .name{font-size:10px;color:#b7bcee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cell .cat{position:absolute;bottom:6px;right:6px;width:10px;height:10px;border-radius:50%;opacity:.9}
+
+    .hidden{display:none!important}
+    .highlight{outline:2px solid var(--accent);box-shadow:0 0 0 3px rgba(108,140,255,.25) inset}
+
+    .tooltip{position:fixed;pointer-events:none;background:#0c1026;border:1px solid #283160;padding:10px 12px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.45);min-width:220px;z-index:9999}
+    .tooltip h4{margin:0 0 6px;font-size:14px}
+    .tooltip .row{display:flex;justify-content:space-between;font-size:12px;color:#c7cbf7;margin:2px 0}
+
+    .note{font-size:12px;color:#96a0d8;margin-top:10px}
+    .footer{padding:12px 18px;color:#9aa3d9}
+
+    @media (max-width: 980px){
+      .grid{grid-template-columns:repeat(18, minmax(36px,1fr));grid-auto-rows:54px}
+    }
+    @media (max-width: 720px){
+      .grid{transform:scale(.82);transform-origin:left top}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">Dynamic Periodic Table Explorer</div>
+    <div class="controls">
+      <input id="search" type="text" placeholder="Search by symbol or name" />
+      <select id="filter-category">
+        <option value="all">All categories</option>
+        <option value="alkali metal">Alkali metals</option>
+        <option value="alkaline earth metal">Alkaline earth metals</option>
+        <option value="transition metal">Transition metals</option>
+        <option value="post-transition metal">Post-transition metals</option>
+        <option value="metalloid">Metalloids</option>
+        <option value="nonmetal">Reactive nonmetals</option>
+        <option value="noble gas">Noble gases</option>
+        <option value="lanthanide">Lanthanides</option>
+        <option value="actinide">Actinides</option>
+      </select>
+      <select id="filter-phase">
+        <option value="all">All phases (approx.)</option>
+        <option value="solid">Solid</option>
+        <option value="liquid">Liquid</option>
+        <option value="gas">Gas</option>
+        <option value="unknown">Unknown</option>
+      </select>
+      <button id="clear">Reset</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="legend" id="legend"></div>
+    <div class="grid" id="grid" aria-label="Periodic table"></div>
+    <div class="note">Hover an element to see its details. Use search and filters to explore. Phases and categories are approximations at STP.</div>
+  </div>
+
+  <div id="tooltip" class="tooltip hidden" role="dialog" aria-live="polite"></div>
+
+  <div class="footer">Built with HTML, CSS & Vanilla JS • No frameworks</div>
+
+<script>
+// ---------------- Data ----------------
+// Minimal but complete dataset for 118 elements with grid positions (xpos, ypos),
+// common category, and approximate phase at STP. Source layout modeled after IUPAC chart.
+// Note: Categories consolidated for simplicity.
+const ELEMENTS = [
+  {n:1,  s:"H",  name:"Hydrogen",      xpos:1, ypos:1, category:"nonmetal", phase:"gas"},
+  {n:2,  s:"He", name:"Helium",        xpos:18,ypos:1, category:"noble gas", phase:"gas"},
+  {n:3,  s:"Li", name:"Lithium",       xpos:1, ypos:2, category:"alkali metal", phase:"solid"},
+  {n:4,  s:"Be", name:"Beryllium",     xpos:2, ypos:2, category:"alkaline earth metal", phase:"solid"},
+  {n:5,  s:"B",  name:"Boron",         xpos:13,ypos:2, category:"metalloid", phase:"solid"},
+  {n:6,  s:"C",  name:"Carbon",        xpos:14,ypos:2, category:"nonmetal", phase:"solid"},
+  {n:7,  s:"N",  name:"Nitrogen",      xpos:15,ypos:2, category:"nonmetal", phase:"gas"},
+  {n:8,  s:"O",  name:"Oxygen",        xpos:16,ypos:2, category:"nonmetal", phase:"gas"},
+  {n:9,  s:"F",  name:"Fluorine",      xpos:17,ypos:2, category:"nonmetal", phase:"gas"},
+  {n:10, s:"Ne", name:"Neon",          xpos:18,ypos:2, category:"noble gas", phase:"gas"},
+  {n:11, s:"Na", name:"Sodium",        xpos:1, ypos:3, category:"alkali metal", phase:"solid"},
+  {n:12, s:"Mg", name:"Magnesium",     xpos:2, ypos:3, category:"alkaline earth metal", phase:"solid"},
+  {n:13, s:"Al", name:"Aluminium",     xpos:13,ypos:3, category:"post-transition metal", phase:"solid"},
+  {n:14, s:"Si", name:"Silicon",       xpos:14,ypos:3, category:"metalloid", phase:"solid"},
+  {n:15, s:"P",  name:"Phosphorus",    xpos:15,ypos:3, category:"nonmetal", phase:"solid"},
+  {n:16, s:"S",  name:"Sulfur",        xpos:16,ypos:3, category:"nonmetal", phase:"solid"},
+  {n:17, s:"Cl", name:"Chlorine",      xpos:17,ypos:3, category:"nonmetal", phase:"gas"},
+  {n:18, s:"Ar", name:"Argon",         xpos:18,ypos:3, category:"noble gas", phase:"gas"},
+  {n:19, s:"K",  name:"Potassium",     xpos:1, ypos:4, category:"alkali metal", phase:"solid"},
+  {n:20, s:"Ca", name:"Calcium",       xpos:2, ypos:4, category:"alkaline earth metal", phase:"solid"},
+  {n:21, s:"Sc", name:"Scandium",      xpos:3, ypos:4, category:"transition metal", phase:"solid"},
+  {n:22, s:"Ti", name:"Titanium",      xpos:4, ypos:4, category:"transition metal", phase:"solid"},
+  {n:23, s:"V",  name:"Vanadium",      xpos:5, ypos:4, category:"transition metal", phase:"solid"},
+  {n:24, s:"Cr", name:"Chromium",      xpos:6, ypos:4, category:"transition metal", phase:"solid"},
+  {n:25, s:"Mn", name:"Manganese",     xpos:7, ypos:4, category:"transition metal", phase:"solid"},
+  {n:26, s:"Fe", name:"Iron",          xpos:8, ypos:4, category:"transition metal", phase:"solid"},
+  {n:27, s:"Co", name:"Cobalt",        xpos:9, ypos:4, category:"transition metal", phase:"solid"},
+  {n:28, s:"Ni", name:"Nickel",        xpos:10,ypos:4, category:"transition metal", phase:"solid"},
+  {n:29, s:"Cu", name:"Copper",        xpos:11,ypos:4, category:"transition metal", phase:"solid"},
+  {n:30, s:"Zn", name:"Zinc",          xpos:12,ypos:4, category:"transition metal", phase:"solid"},
+  {n:31, s:"Ga", name:"Gallium",       xpos:13,ypos:4, category:"post-transition metal", phase:"solid"},
+  {n:32, s:"Ge", name:"Germanium",     xpos:14,ypos:4, category:"metalloid", phase:"solid"},
+  {n:33, s:"As", name:"Arsenic",       xpos:15,ypos:4, category:"metalloid", phase:"solid"},
+  {n:34, s:"Se", name:"Selenium",      xpos:16,ypos:4, category:"nonmetal", phase:"solid"},
+  {n:35, s:"Br", name:"Bromine",       xpos:17,ypos:4, category:"nonmetal", phase:"liquid"},
+  {n:36, s:"Kr", name:"Krypton",       xpos:18,ypos:4, category:"noble gas", phase:"gas"},
+  {n:37, s:"Rb", name:"Rubidium",      xpos:1, ypos:5, category:"alkali metal", phase:"solid"},
+  {n:38, s:"Sr", name:"Strontium",     xpos:2, ypos:5, category:"alkaline earth metal", phase:"solid"},
+  {n:39, s:"Y",  name:"Yttrium",       xpos:3, ypos:5, category:"transition metal", phase:"solid"},
+  {n:40, s:"Zr", name:"Zirconium",     xpos:4, ypos:5, category:"transition metal", phase:"solid"},
+  {n:41, s:"Nb", name:"Niobium",       xpos:5, ypos:5, category:"transition metal", phase:"solid"},
+  {n:42, s:"Mo", name:"Molybdenum",    xpos:6, ypos:5, category:"transition metal", phase:"solid"},
+  {n:43, s:"Tc", name:"Technetium",    xpos:7, ypos:5, category:"transition metal", phase:"unknown"},
+  {n:44, s:"Ru", name:"Ruthenium",     xpos:8, ypos:5, category:"transition metal", phase:"solid"},
+  {n:45, s:"Rh", name:"Rhodium",       xpos:9, ypos:5, category:"transition metal", phase:"solid"},
+  {n:46, s:"Pd", name:"Palladium",     xpos:10,ypos:5, category:"transition metal", phase:"solid"},
+  {n:47, s:"Ag", name:"Silver",        xpos:11,ypos:5, category:"transition metal", phase:"solid"},
+  {n:48, s:"Cd", name:"Cadmium",       xpos:12,ypos:5, category:"transition metal", phase:"solid"},
+  {n:49, s:"In", name:"Indium",        xpos:13,ypos:5, category:"post-transition metal", phase:"solid"},
+  {n:50, s:"Sn", name:"Tin",           xpos:13,ypos:5, category:"post-transition metal", phase:"solid"},
+  {n:50, s:"Sn", name:"Tin",           xpos:14,ypos:5, category:"post-transition metal", phase:"solid"},
+  {n:51, s:"Sb", name:"Antimony",      xpos:15,ypos:5, category:"metalloid", phase:"solid"},
+  {n:52, s:"Te", name:"Tellurium",     xpos:16,ypos:5, category:"metalloid", phase:"solid"},
+  {n:53, s:"I",  name:"Iodine",        xpos:17,ypos:5, category:"nonmetal", phase:"solid"},
+  {n:54, s:"Xe", name:"Xenon",         xpos:18,ypos:5, category:"noble gas", phase:"gas"},
+  {n:55, s:"Cs", name:"Cesium",        xpos:1, ypos:6, category:"alkali metal", phase:"solid"},
+  {n:56, s:"Ba", name:"Barium",        xpos:2, ypos:6, category:"alkaline earth metal", phase:"solid"},
+  {n:57, s:"La", name:"Lanthanum",     xpos:3, ypos:9, category:"lanthanide", phase:"solid"},
+  {n:58, s:"Ce", name:"Cerium",        xpos:4, ypos:9, category:"lanthanide", phase:"solid"},
+  {n:59, s:"Pr", name:"Praseodymium",  xpos:5, ypos:9, category:"lanthanide", phase:"solid"},
+  {n:60, s:"Nd", name:"Neodymium",     xpos:6, ypos:9, category:"lanthanide", phase:"solid"},
+  {n:61, s:"Pm", name:"Promethium",    xpos:7, ypos:9, category:"lanthanide", phase:"unknown"},
+  {n:62, s:"Sm", name:"Samarium",      xpos:8, ypos:9, category:"lanthanide", phase:"solid"},
+  {n:63, s:"Eu", name:"Europium",      xpos:9, ypos:9, category:"lanthanide", phase:"solid"},
+  {n:64, s:"Gd", name:"Gadolinium",    xpos:10,ypos:9, category:"lanthanide", phase:"solid"},
+  {n:65, s:"Tb", name:"Terbium",       xpos:11,ypos:9, category:"lanthanide", phase:"solid"},
+  {n:66, s:"Dy", name:"Dysprosium",    xpos:12,ypos:9, category:"lanthanide", phase:"solid"},
+  {n:67, s:"Ho", name:"Holmium",       xpos:13,ypos:9, category:"lanthanide", phase:"solid"},
+  {n:68, s:"Er", name:"Erbium",        xpos:14,ypos:9, category:"lanthanide", phase:"solid"},
+  {n:69, s:"Tm", name:"Thulium",       xpos:15,ypos:9, category:"lanthanide", phase:"solid"},
+  {n:70, s:"Yb", name:"Ytterbium",     xpos:16,ypos:9, category:"lanthanide", phase:"solid"},
+  {n:71, s:"Lu", name:"Lutetium",      xpos:17,ypos:9, category:"lanthanide", phase:"solid"},
+  {n:72, s:"Hf", name:"Hafnium",       xpos:4, ypos:6, category:"transition metal", phase:"solid"},
+  {n:73, s:"Ta", name:"Tantalum",      xpos:5, ypos:6, category:"transition metal", phase:"solid"},
+  {n:74, s:"W",  name:"Tungsten",      xpos:6, ypos:6, category:"transition metal", phase:"solid"},
+  {n:75, s:"Re", name:"Rhenium",       xpos:7, ypos:6, category:"transition metal", phase:"solid"},
+  {n:76, s:"Os", name:"Osmium",        xpos:8, ypos:6, category:"transition metal", phase:"solid"},
+  {n:77, s:"Ir", name:"Iridium",       xpos:9, ypos:6, category:"transition metal", phase:"solid"},
+  {n:78, s:"Pt", name:"Platinum",      xpos:10,ypos:6, category:"transition metal", phase:"solid"},
+  {n:79, s:"Au", name:"Gold",          xpos:11,ypos:6, category:"transition metal", phase:"solid"},
+  {n:80, s:"Hg", name:"Mercury",       xpos:12,ypos:6, category:"transition metal", phase:"liquid"},
+  {n:81, s:"Tl", name:"Thallium",      xpos:13,ypos:6, category:"post-transition metal", phase:"solid"},
+  {n:82, s:"Pb", name:"Lead",          xpos:14,ypos:6, category:"post-transition metal", phase:"solid"},
+  {n:83, s:"Bi", name:"Bismuth",       xpos:15,ypos:6, category:"post-transition metal", phase:"solid"},
+  {n:84, s:"Po", name:"Polonium",      xpos:16,ypos:6, category:"metalloid", phase:"solid"},
+  {n:85, s:"At", name:"Astatine",      xpos:17,ypos:6, category:"metalloid", phase:"unknown"},
+  {n:86, s:"Rn", name:"Radon",         xpos:18,ypos:6, category:"noble gas", phase:"gas"},
+  {n:87, s:"Fr", name:"Francium",      xpos:1, ypos:7, category:"alkali metal", phase:"unknown"},
+  {n:88, s:"Ra", name:"Radium",        xpos:2, ypos:7, category:"alkaline earth metal", phase:"solid"},
+  {n:89, s:"Ac", name:"Actinium",      xpos:3, ypos:10,category:"actinide", phase:"solid"},
+  {n:90, s:"Th", name:"Thorium",       xpos:4, ypos:10,category:"actinide", phase:"solid"},
+  {n:91, s:"Pa", name:"Protactinium",  xpos:5, ypos:10,category:"actinide", phase:"solid"},
+  {n:92, s:"U",  name:"Uranium",       xpos:6, ypos:10,category:"actinide", phase:"solid"},
+  {n:93, s:"Np", name:"Neptunium",     xpos:7, ypos:10,category:"actinide", phase:"solid"},
+  {n:94, s:"Pu", name:"Plutonium",     xpos:8, ypos:10,category:"actinide", phase:"solid"},
+  {n:95, s:"Am", name:"Americium",     xpos:9, ypos:10,category:"actinide", phase:"solid"},
+  {n:96, s:"Cm", name:"Curium",        xpos:10,ypos:10,category:"actinide", phase:"solid"},
+  {n:97, s:"Bk", name:"Berkelium",     xpos:11,ypos:10,category:"actinide", phase:"solid"},
+  {n:98, s:"Cf", name:"Californium",   xpos:12,ypos:10,category:"actinide", phase:"solid"},
+  {n:99, s:"Es", name:"Einsteinium",   xpos:13,ypos:10,category:"actinide", phase:"solid"},
+  {n:100,s:"Fm", name:"Fermium",       xpos:14,ypos:10,category:"actinide", phase:"solid"},
+  {n:101,s:"Md", name:"Mendelevium",   xpos:15,ypos:10,category:"actinide", phase:"solid"},
+  {n:102,s:"No", name:"Nobelium",      xpos:16,ypos:10,category:"actinide", phase:"solid"},
+  {n:103,s:"Lr", name:"Lawrencium",    xpos:17,ypos:10,category:"actinide", phase:"solid"},
+  {n:104,s:"Rf", name:"Rutherfordium", xpos:4, ypos:7, category:"transition metal", phase:"unknown"},
+  {n:105,s:"Db", name:"Dubnium",       xpos:5, ypos:7, category:"transition metal", phase:"unknown"},
+  {n:106,s:"Sg", name:"Seaborgium",    xpos:6, ypos:7, category:"transition metal", phase:"unknown"},
+  {n:107,s:"Bh", name:"Bohrium",       xpos:7, ypos:7, category:"transition metal", phase:"unknown"},
+  {n:108,s:"Hs", name:"Hassium",       xpos:8, ypos:7, category:"transition metal", phase:"unknown"},
+  {n:109,s:"Mt", name:"Meitnerium",    xpos:9, ypos:7, category:"unknown", phase:"unknown"},
+  {n:110,s:"Ds", name:"Darmstadtium",  xpos:10,ypos:7, category:"unknown", phase:"unknown"},
+  {n:111,s:"Rg", name:"Roentgenium",   xpos:11,ypos:7, category:"unknown", phase:"unknown"},
+  {n:112,s:"Cn", name:"Copernicium",   xpos:12,ypos:7, category:"transition metal", phase:"unknown"},
+  {n:113,s:"Nh", name:"Nihonium",      xpos:13,ypos:7, category:"post-transition metal", phase:"unknown"},
+  {n:114,s:"Fl", name:"Flerovium",     xpos:14,ypos:7, category:"post-transition metal", phase:"unknown"},
+  {n:115,s:"Mc", name:"Moscovium",     xpos:15,ypos:7, category:"post-transition metal", phase:"unknown"},
+  {n:116,s:"Lv", name:"Livermorium",   xpos:16,ypos:7, category:"post-transition metal", phase:"unknown"},
+  {n:117,s:"Ts", name:"Tennessine",    xpos:17,ypos:7, category:"halogen", phase:"unknown"},
+  {n:118,s:"Og", name:"Oganesson",     xpos:18,ypos:7, category:"noble gas", phase:"unknown"}
+];
+
+// Correct Sn duplication fix (ensure only one Sn at xpos:14)
+// Remove erroneous duplicate at xpos:13
+for (let i = ELEMENTS.length - 1; i >= 0; i--) {
+  if (ELEMENTS[i].s === 'Sn' && ELEMENTS[i].xpos === 13) ELEMENTS.splice(i,1);
+}
+
+const CATEGORY_COLOR = {
+  "alkali metal":"var(--alkali)",
+  "alkaline earth metal":"var(--alkaline)",
+  "transition metal":"var(--transition)",
+  "post-transition metal":"var(--post)",
+  "metalloid":"var(--metalloid)",
+  "nonmetal":"var(--nonmetal)",
+  "noble gas":"var(--noble)",
+  "lanthanide":"var(--lanth)",
+  "actinide":"var(--act)",
+  "halogen":"var(--halogen)",
+  "unknown":"#546e7a"
+};
+
+const PHASE_COLOR = {
+  gas: "var(--gas)", liquid:"var(--liquid)", solid:"var(--solid)", unknown:"var(--unknown)"
+};
+
+// ---------------- UI Build ----------------
+const grid = document.getElementById('grid');
+const tooltip = document.getElementById('tooltip');
+const search = document.getElementById('search');
+const filterCategory = document.getElementById('filter-category');
+const filterPhase = document.getElementById('filter-phase');
+const clearBtn = document.getElementById('clear');
+
+function buildLegend(){
+  const legend = document.getElementById('legend');
+  const catKeys = ["alkali metal","alkaline earth metal","transition metal","post-transition metal","metalloid","nonmetal","noble gas","halogen","lanthanide","actinide"]; 
+  catKeys.forEach(k=>{
+    const pill = document.createElement('div'); pill.className='pill';
+    const dot = document.createElement('span'); dot.className='dot'; dot.style.background=CATEGORY_COLOR[k];
+    pill.append(dot, document.createTextNode(k)); legend.append(pill);
+  });
+}
+
+function cellHTML(el){
+  const catColor = CATEGORY_COLOR[el.category] || '#546e7a';
+  return `
+    <div class="num">${el.n}</div>
+    <span class="sym">${el.s}</span>
+    <div class="name">${el.name}</div>
+    <span class="cat" style="background:${catColor}"></span>
+  `;
+}
+
+function render(){
+  grid.innerHTML='';
+  const q = (search.value||'').trim().toLowerCase();
+  const cat = filterCategory.value;
+  const ph = filterPhase.value;
+  let anyHighlighted = false;
+
+  ELEMENTS.forEach(el=>{
+    const matchQuery = !q || el.s.toLowerCase().includes(q) || el.name.toLowerCase().includes(q) || String(el.n)===q;
+    const matchCat = (cat==='all') || (el.category===cat);
+    const matchPhase = (ph==='all') || (el.phase===ph);
+
+    const cell = document.createElement('button');
+    cell.type='button';
+    cell.className='cell';
+    cell.setAttribute('data-symbol', el.s);
+    cell.style.gridColumn = el.xpos;
+    cell.style.gridRow = el.ypos;
+    cell.innerHTML = cellHTML(el);
+
+    if(!(matchQuery && matchCat && matchPhase)){
+      cell.style.opacity = .18; cell.style.filter='grayscale(40%)';
+      cell.tabIndex = -1;
+    } else if (q){
+      cell.classList.add('highlight'); anyHighlighted = true;
+    }
+
+    cell.addEventListener('mouseenter', e=>showTooltip(e, el));
+    cell.addEventListener('mousemove', e=>positionTooltip(e));
+    cell.addEventListener('mouseleave', hideTooltip);
+
+    grid.appendChild(cell);
+  });
+
+  if(q && !anyHighlighted){ hideTooltip(); }
+}
+
+function showTooltip(evt, el){
+  tooltip.classList.remove('hidden');
+  tooltip.innerHTML = `
+    <h4>${el.name} <span style="opacity:.7">(${el.s})</span></h4>
+    <div class="row"><span>Atomic number</span><strong>${el.n}</strong></div>
+    <div class="row"><span>Category</span><strong>${el.category}</strong></div>
+    <div class="row"><span>Phase (STP)</span><strong style="color:${PHASE_COLOR[el.phase]}">${el.phase}</strong></div>
+    <div class="row"><span>Position</span><strong>Group ${el.xpos}, Period ${el.ypos}</strong></div>
+  `;
+  positionTooltip(evt);
+}
+function positionTooltip(evt){
+  const pad=14; const tw = tooltip.offsetWidth; const th = tooltip.offsetHeight; 
+  let x = evt.clientX + pad, y = evt.clientY + pad;
+  if (x + tw > window.innerWidth - 8) x = window.innerWidth - tw - 8;
+  if (y + th > window.innerHeight - 8) y = window.innerHeight - th - 8;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+function hideTooltip(){ tooltip.classList.add('hidden'); }
+
+search.addEventListener('input', render);
+filterCategory.addEventListener('change', render);
+filterPhase.addEventListener('change', render);
+clearBtn.addEventListener('click', ()=>{ search.value=''; filterCategory.value='all'; filterPhase.value='all'; render(); });
+
+buildLegend();
+render();
+</script>
+</body>
+</html>
