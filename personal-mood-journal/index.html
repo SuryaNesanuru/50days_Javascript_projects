@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Personal Mood Journal</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .day { border: 1px solid #ccc; padding: 20px; min-height: 60px; text-align: center; cursor: pointer; position: relative; }
+    .note-tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 5px; border-radius: 5px; white-space: nowrap; }
+    .day:hover .note-tooltip { display: block; }
+    .form { margin: 20px 0; display: flex; flex-direction: column; max-width: 300px; margin-inline: auto; gap: 10px; }
+    .stats { margin-top: 30px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>Personal Mood Journal 😊</h1>
+  <div class="form">
+    <label for="date">Select Date:</label>
+    <input type="date" id="date">
+
+    <label for="emoji">Pick Emoji:</label>
+    <input type="text" id="emoji" placeholder="😊" maxlength="2">
+
+    <label for="note">Short Note:</label>
+    <input type="text" id="note" placeholder="Your note here">
+
+    <button id="saveBtn">Save Entry</button>
+  </div>
+
+  <h2>Calendar</h2>
+  <div class="calendar" id="calendar"></div>
+
+  <div class="stats" id="stats"></div>
+
+  <script>
+    const calendarEl = document.getElementById('calendar');
+    const saveBtn = document.getElementById('saveBtn');
+    const statsEl = document.getElementById('stats');
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth(); // current month
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    let entries = JSON.parse(localStorage.getItem('moodEntries')) || {};
+
+    function renderCalendar() {
+      calendarEl.innerHTML = '';
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateKey = `${year}-${month+1}-${d}`;
+        const dayEl = document.createElement('div');
+        dayEl.className = 'day';
+        dayEl.innerHTML = `<strong>${d}</strong>`;
+        if (entries[dateKey]) {
+          dayEl.innerHTML += `<div>${entries[dateKey].emoji}</div>`;
+          const tooltip = document.createElement('div');
+          tooltip.className = 'note-tooltip';
+          tooltip.textContent = entries[dateKey].note;
+          dayEl.appendChild(tooltip);
+        }
+        calendarEl.appendChild(dayEl);
+      }
+      updateStats();
+    }
+
+    function updateStats() {
+      if (!Object.keys(entries).length) {
+        statsEl.textContent = 'No entries yet.';
+        return;
+      }
+      // For now, pick happiest day = day with most positive emoji (naive)
+      let happiest = null;
+      for (const [date, entry] of Object.entries(entries)) {
+        if (!happiest || entry.emoji === '😊' || entry.emoji === '😄' || entry.emoji === '😁') {
+          happiest = { date, ...entry };
+        }
+      }
+      if (happiest) {
+        statsEl.textContent = `Your happiest day this month: ${happiest.date} ${happiest.emoji} - ${happiest.note}`;
+      } else {
+        statsEl.textContent = 'Keep logging your moods!';
+      }
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const date = document.getElementById('date').value;
+      const emoji = document.getElementById('emoji').value;
+      const note = document.getElementById('note').value;
+      if (!date || !emoji) return alert('Please select date and emoji!');
+      entries[date] = { emoji, note };
+      localStorage.setItem('moodEntries', JSON.stringify(entries));
+      renderCalendar();
+    });
+
+    renderCalendar();
+  </script>
+</body>
+</html>
