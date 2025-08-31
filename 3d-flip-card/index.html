@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Flip Card Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #4e54c8, #8f94fb);
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    /* Progress Bar */
+    #progress-container {
+      width: 100%;
+      background: #333;
+      border-radius: 20px;
+      margin: 20px auto;
+      height: 20px;
+      overflow: hidden;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 0;
+      background: #00ff88;
+      transition: width 0.5s;
+    }
+
+    /* Card Container */
+    .quiz-card {
+      perspective: 1000px;
+      width: 350px;
+      margin: 30px auto;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      text-align: center;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+
+    .quiz-card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 15px;
+      box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .card-front {
+      background: #fff;
+      color: #333;
+    }
+
+    .card-back {
+      background: #222;
+      transform: rotateY(180deg);
+    }
+
+    /* Answer Buttons */
+    .answer-btn {
+      margin: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #4e54c8;
+      color: #fff;
+      transition: 0.3s;
+    }
+
+    .answer-btn:hover {
+      background: #333;
+    }
+
+    /* Correct / Wrong Feedback */
+    .correct {
+      background: #00c851 !important;
+    }
+
+    .wrong {
+      background: #ff4444 !important;
+      animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+
+    /* Score */
+    #score {
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>3D Flip Card Quiz</h1>
+
+  <!-- Progress Bar -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <!-- Quiz Card -->
+  <div class="quiz-card" id="quiz-card">
+    <div class="card-inner">
+      <div class="card-front">
+        <h2 id="question">Loading...</h2>
+        <div id="answers"></div>
+      </div>
+      <div class="card-back">
+        <h2 id="feedback">Answer!</h2>
+        <button onclick="nextQuestion()" class="answer-btn">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score -->
+  <div id="score">Score: 0</div>
+
+  <script>
+    const questions = [
+      {
+        question: "What is the capital of France?",
+        answers: ["Berlin", "Madrid", "Paris", "Rome"],
+        correct: 2
+      },
+      {
+        question: "Which language runs in a web browser?",
+        answers: ["Python", "JavaScript", "C++", "Java"],
+        correct: 1
+      },
+      {
+        question: "What does CSS stand for?",
+        answers: ["Cascading Style Sheets", "Cool Style System", "Creative Styling Setup", "Computer Styled Syntax"],
+        correct: 0
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const questionEl = document.getElementById("question");
+    const answersEl = document.getElementById("answers");
+    const feedbackEl = document.getElementById("feedback");
+    const quizCard = document.getElementById("quiz-card");
+    const progressBar = document.getElementById("progress-bar");
+    const scoreEl = document.getElementById("score");
+
+    function loadQuestion() {
+      let q = questions[currentQuestion];
+      questionEl.textContent = q.question;
+      answersEl.innerHTML = "";
+
+      q.answers.forEach((ans, index) => {
+        let btn = document.createElement("button");
+        btn.textContent = ans;
+        btn.className = "answer-btn";
+        btn.onclick = () => checkAnswer(index);
+        answersEl.appendChild(btn);
+      });
+
+      updateProgress();
+    }
+
+    function checkAnswer(index) {
+      let q = questions[currentQuestion];
+      const buttons = answersEl.querySelectorAll("button");
+
+      if (index === q.correct) {
+        buttons[index].classList.add("correct");
+        score++;
+        feedbackEl.textContent = "Correct! 🎉";
+      } else {
+        buttons[index].classList.add("wrong");
+        feedbackEl.textContent = "Wrong! ❌";
+      }
+
+      scoreEl.textContent = `Score: ${score}`;
+      setTimeout(() => {
+        quizCard.classList.add("flipped");
+      }, 800);
+    }
+
+    function nextQuestion() {
+      quizCard.classList.remove("flipped");
+      currentQuestion++;
+
+      if (currentQuestion < questions.length) {
+        setTimeout(loadQuestion, 500);
+      } else {
+        questionEl.textContent = "Quiz Completed!";
+        answersEl.innerHTML = "";
+        feedbackEl.textContent = `Final Score: ${score}/${questions.length}`;
+      }
+    }
+
+    function updateProgress() {
+      let progress = ((currentQuestion) / questions.length) * 100;
+      progressBar.style.width = progress + "%";
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
