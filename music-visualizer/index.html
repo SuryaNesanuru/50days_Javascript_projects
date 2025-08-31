@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Visualizer</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      margin: 10px;
+    }
+
+    #controls {
+      margin: 20px;
+      text-align: center;
+    }
+
+    input, select {
+      margin: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 60vh;
+      background: #111;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎶 Music Visualizer</h1>
+
+  <div id="controls">
+    <input type="file" id="fileInput" accept="audio/*">
+    <select id="theme">
+      <option value="neon">Neon</option>
+      <option value="minimal">Minimal</option>
+      <option value="retro">Retro</option>
+    </select>
+    <button id="playBtn">▶ Play</button>
+  </div>
+
+  <canvas id="visualizer"></canvas>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const playBtn = document.getElementById("playBtn");
+    const themeSelect = document.getElementById("theme");
+    const canvas = document.getElementById("visualizer");
+    const ctx = canvas.getContext("2d");
+
+    let audioContext, analyser, source, bufferLength, dataArray;
+    let audio = new Audio();
+    let isPlaying = false;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight * 0.6;
+
+    playBtn.addEventListener("click", () => {
+      if (!isPlaying) {
+        audio.play();
+        playBtn.textContent = "⏸ Pause";
+        isPlaying = true;
+      } else {
+        audio.pause();
+        playBtn.textContent = "▶ Play";
+        isPlaying = false;
+      }
+    });
+
+    fileInput.addEventListener("change", function() {
+      const file = this.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        audio.src = url;
+        audio.load();
+        initAudio();
+      }
+    });
+
+    function initAudio() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      source = audioContext.createMediaElementSource(audio);
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+      analyser.fftSize = 256;
+
+      bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
+
+      draw();
+    }
+
+    function draw() {
+      requestAnimationFrame(draw);
+      analyser.getByteFrequencyData(dataArray);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let theme = themeSelect.value;
+
+      let barWidth = (canvas.width / bufferLength) * 2.5;
+      let barHeight;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        barHeight = dataArray[i];
+
+        // 🎨 Themes
+        if (theme === "neon") {
+          ctx.fillStyle = `hsl(${i * 4}, 100%, 50%)`;
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = ctx.fillStyle;
+        } else if (theme === "minimal") {
+          ctx.fillStyle = "#00ff88";
+          ctx.shadowBlur = 0;
+        } else if (theme === "retro") {
+          ctx.fillStyle = ["#ff0040", "#ff8000", "#ffff00", "#00ff00", "#00ffff", "#ff00ff"][i % 6];
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = ctx.fillStyle;
+        }
+
+        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+        x += barWidth + 1;
+      }
+    }
+  </script>
+</body>
+</html>
