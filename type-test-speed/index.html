@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Speed Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    #text {
+      font-size: 18px;
+      background: #fff;
+      color: #333;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: 20px auto;
+      line-height: 1.6;
+    }
+
+    .correct {
+      color: green;
+    }
+    .wrong {
+      color: red;
+    }
+
+    textarea {
+      width: 100%;
+      max-width: 600px;
+      height: 100px;
+      margin-top: 20px;
+      font-size: 18px;
+      padding: 15px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    /* Progress Bar */
+    #progress-container {
+      width: 100%;
+      max-width: 600px;
+      background: #333;
+      border-radius: 20px;
+      margin: 20px auto;
+      height: 20px;
+      overflow: hidden;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 0;
+      background: #00ff88;
+      transition: width 0.3s;
+    }
+
+    #results {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Typing Speed Test</h1>
+  <div id="text"></div>
+
+  <textarea id="input" placeholder="Start typing here..."></textarea>
+
+  <!-- Progress Bar -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <div id="results">
+    Time: <span id="time">0</span>s | 
+    WPM: <span id="wpm">0</span> | 
+    Accuracy: <span id="accuracy">100</span>%
+  </div>
+
+  <canvas id="confetti"></canvas>
+
+  <script>
+    const paragraph = "Typing fast is a skill that improves with practice. Keep going and you will get better!";
+    const textEl = document.getElementById("text");
+    const inputEl = document.getElementById("input");
+    const timeEl = document.getElementById("time");
+    const wpmEl = document.getElementById("wpm");
+    const accuracyEl = document.getElementById("accuracy");
+    const progressBar = document.getElementById("progress-bar");
+    const confettiCanvas = document.getElementById("confetti");
+    const ctx = confettiCanvas.getContext("2d");
+
+    // Setup
+    let startTime = null;
+    let timerInterval;
+    let correctChars = 0;
+
+    // Display paragraph
+    textEl.innerHTML = paragraph.split("").map(char => `<span>${char}</span>`).join("");
+
+    const spans = textEl.querySelectorAll("span");
+
+    inputEl.addEventListener("input", () => {
+      const input = inputEl.value.split("");
+
+      if (!startTime) {
+        startTime = new Date();
+        timerInterval = setInterval(updateTimer, 1000);
+      }
+
+      correctChars = 0;
+      input.forEach((char, i) => {
+        if (char === paragraph[i]) {
+          spans[i].classList.add("correct");
+          spans[i].classList.remove("wrong");
+          correctChars++;
+        } else {
+          spans[i].classList.add("wrong");
+          spans[i].classList.remove("correct");
+        }
+      });
+
+      // Reset remaining characters
+      for (let i = input.length; i < spans.length; i++) {
+        spans[i].classList.remove("correct", "wrong");
+      }
+
+      // Accuracy
+      let accuracy = (correctChars / input.length) * 100 || 100;
+      accuracyEl.textContent = accuracy.toFixed(0);
+
+      // Progress
+      let progress = (input.length / paragraph.length) * 100;
+      progressBar.style.width = progress + "%";
+
+      // Check completion
+      if (input.length === paragraph.length) {
+        clearInterval(timerInterval);
+        launchConfetti();
+      }
+    });
+
+    function updateTimer() {
+      let elapsed = Math.floor((new Date() - startTime) / 1000);
+      timeEl.textContent = elapsed;
+
+      // Words per minute
+      let wordsTyped = inputEl.value.trim().split(/\s+/).length;
+      let wpm = Math.round((wordsTyped / elapsed) * 60);
+      wpmEl.textContent = wpm || 0;
+    }
+
+    // 🎉 Confetti Animation
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+
+    function randomColor() {
+      const colors = ["#ff0", "#0f0", "#0ff", "#f0f", "#f00", "#00f"];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    let confetti = [];
+    function launchConfetti() {
+      for (let i = 0; i < 100; i++) {
+        confetti.push({
+          x: Math.random() * confettiCanvas.width,
+          y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * 20 + 10,
+          color: randomColor(),
+          tilt: Math.random() * 10 - 10,
+          tiltAngleIncremental: Math.random() * 0.07 + 0.05,
+          tiltAngle: 0
+        });
+      }
+      requestAnimationFrame(drawConfetti);
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      confetti.forEach(c => {
+        ctx.beginPath();
+        ctx.fillStyle = c.color;
+        ctx.ellipse(c.x, c.y, c.r, c.r/2, Math.PI/4, 0, 2 * Math.PI);
+        ctx.fill();
+      });
+      updateConfetti();
+      requestAnimationFrame(drawConfetti);
+    }
+
+    function updateConfetti() {
+      confetti.forEach(c => {
+        c.tiltAngle += c.tiltAngleIncremental;
+        c.y += (Math.cos(c.d) + 3 + c.r / 2) / 2;
+        c.x += Math.sin(c.tiltAngle);
+      });
+    }
+  </script>
+</body>
+</html>
