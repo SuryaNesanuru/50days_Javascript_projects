@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plant Pal – Smart Watering Reminder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🌱 Plant Pal</h1>
+    <p>Track your houseplants and never forget to water them!</p>
+  </header>
+
+  <main>
+    <!-- Add Plant Form -->
+    <section id="add-plant">
+      <h2>Add a Plant</h2>
+      <form id="plantForm">
+        <input type="text" id="plantName" placeholder="Plant name" required>
+        <input type="number" id="frequency" placeholder="Water every X days" min="1" required>
+        <input type="file" id="plantPhoto" accept="image/*">
+        <button type="submit">Add Plant</button>
+      </form>
+    </section>
+
+    <!-- Plant List -->
+    <section id="plantList">
+      <h2>Your Plants</h2>
+      <div id="cardsContainer" class="cards"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
