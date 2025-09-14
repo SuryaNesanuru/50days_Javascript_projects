@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mirror Mood – Webcam Filter</title>
+  <style>
+    :root {
+      --bg: #111;
+      --fg: #fff;
+      --accent: #00e0ff;
+    }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-bottom: 10px;
+      color: var(--accent);
+      text-align: center;
+    }
+    .video-container {
+      position: relative;
+      width: 640px;
+      max-width: 95%;
+    }
+    video, canvas {
+      width: 100%;
+      border-radius: 12px;
+      background: #000;
+    }
+    .controls {
+      margin-top: 20px;
+      display: grid;
+      gap: 15px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      width: 100%;
+      max-width: 640px;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    input[type=range] {
+      width: 100%;
+    }
+    button {
+      padding: 10px 16px;
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover { background: #0ff; }
+
+    /* Theme toggle button */
+    #themeToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--accent);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎥 Mirror Mood</h1>
+  <p>Allow camera access and play with the filters below!</p>
+
+  <div class="video-container">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Brightness</label>
+      <input type="range" id="brightness" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div class="control-group">
+      <label>Contrast</label>
+      <input type="range" id="contrast" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div class="control-group">
+      <label>Saturation</label>
+      <input type="range" id="saturate" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div class="control-group">
+      <label>Invert</label>
+      <input type="range" id="invert" min="0" max="1" step="0.1" value="0">
+    </div>
+    <div class="control-group">
+      <button id="snapBtn">📸 Snapshot</button>
+    </div>
+  </div>
+
+  <button id="themeToggle">🌓</button>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Filter controls
+    const brightness = document.getElementById('brightness');
+    const contrast   = document.getElementById('contrast');
+    const saturate   = document.getElementById('saturate');
+    const invert     = document.getElementById('invert');
+
+    // Start webcam
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        video.srcObject = stream;
+      } catch (err) {
+        alert('Camera access denied or not available.');
+        console.error(err);
+      }
+    }
+    startCamera();
+
+    // Draw video to canvas with filters
+    function drawFrame() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const filterString = `
+          brightness(${brightness.value})
+          contrast(${contrast.value})
+          saturate(${saturate.value})
+          invert(${invert.value})
+        `;
+        ctx.filter = filterString;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      }
+      requestAnimationFrame(drawFrame);
+    }
+    requestAnimationFrame(drawFrame);
+
+    // Snapshot button
+    document.getElementById('snapBtn').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'mirror-mood.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    // Theme toggle
+    const themeBtn = document.getElementById('themeToggle');
+    function setTheme(dark) {
+      if (dark) {
+        document.documentElement.style.setProperty('--bg', '#111');
+        document.documentElement.style.setProperty('--fg', '#fff');
+        document.documentElement.style.setProperty('--accent', '#00e0ff');
+      } else {
+        document.documentElement.style.setProperty('--bg', '#f0f0f0');
+        document.documentElement.style.setProperty('--fg', '#000');
+        document.documentElement.style.setProperty('--accent', '#ff4081');
+      }
+      localStorage.setItem('mirrorTheme', dark ? 'dark' : 'light');
+    }
+    themeBtn.addEventListener('click', () => {
+      const current = localStorage.getItem('mirrorTheme') !== 'light';
+      setTheme(!current);
+    });
+
+    // Load stored theme
+    setTheme(localStorage.getItem('mirrorTheme') !== 'light');
+  </script>
+</body>
+</html>
