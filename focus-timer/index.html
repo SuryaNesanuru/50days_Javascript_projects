@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Focus Timer — Gamified Pomodoro</title>
+  <style>
+    :root{
+      --bg: #0f1724;
+      --card: #0b1220;
+      --accent: #22c1c3;
+      --accent-2: #7b61ff;
+      --muted: #9aa6b2;
+      --glass: rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+      background: radial-gradient(1000px 600px at 10% 10%, rgba(123,97,255,0.12), transparent),
+                  radial-gradient(700px 500px at 90% 90%, rgba(34,193,195,0.08), transparent),
+                  var(--bg);
+      color:#e6eef6;
+      padding:28px;
+    }
+
+    .app {
+      width: 100%;
+      max-width:1000px;
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap:24px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:14px;
+      padding:18px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    /* Left column (timer) */
+    .timer-wrap {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:18px;
+    }
+
+    .circle {
+      width: 300px;
+      height: 300px;
+      display:grid;
+      place-items:center;
+    }
+    svg { width:100%; height:100%; transform: rotate(-90deg); }
+
+    .time-display {
+      position:absolute;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      text-align:center;
+    }
+    .time-display .mode { font-size:16px; color:var(--muted); }
+    .time-display .minutes { font-size:48px; font-weight:700; letter-spacing:1px; }
+
+    .controls {
+      display:flex;
+      gap:10px;
+      margin-top:6px;
+    }
+    .btn {
+      padding:10px 14px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:#061122;
+      box-shadow: 0 6px 18px rgba(123,97,255,0.12);
+    }
+    .btn.secondary{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.06);
+      color:var(--muted);
+    }
+
+    /* Right column (settings + stats) */
+    .settings {
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    label { font-size:13px; color:var(--muted); display:block; margin-bottom:6px; }
+    .row {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    input[type="number"]{
+      width:120px;
+      padding:10px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.04);
+      background:var(--glass);
+      color:inherit;
+      font-weight:600;
+    }
+    select {
+      padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:var(--glass);
+    }
+
+    .stats {
+      display:grid;
+      grid-template-columns: repeat(3,1fr);
+      gap:10px;
+    }
+    .stat {
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+      padding:10px; border-radius:8px; text-align:center;
+    }
+    .stat h3 { margin:0; font-size:18px; }
+    .stat p { margin:0; color:var(--muted); font-size:13px; }
+
+    .badges {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .badge {
+      padding:8px 10px;
+      border-radius:8px;
+      background: rgba(255,255,255,0.02);
+      color:var(--muted);
+      font-weight:700;
+      border:1px solid rgba(255,255,255,0.02);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .badge.unlocked { background: linear-gradient(90deg,#ffd166,#06d6a0); color:#052018; border: none; }
+
+    .small { font-size:12px; color:var(--muted) }
+
+    footer.small { margin-top:8px; font-size:12px; color:var(--muted) }
+
+    @media (max-width:920px){
+      .app { grid-template-columns: 1fr; }
+      .circle { width: 240px; height:240px }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- TIMER CARD -->
+    <div class="card timer-wrap">
+      <div class="circle" role="img" aria-label="timer progress">
+        <svg id="progressSvg" viewBox="0 0 100 100">
+          <!-- background track -->
+          <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.06)" stroke-width="8" fill="none"></circle>
+          <!-- animated progress -->
+          <circle id="progressCircle" cx="50" cy="50" r="45" stroke="url(#grad1)" stroke-width="8" stroke-linecap="round" fill="none" stroke-dasharray="282.743" stroke-dashoffset="282.743"></circle>
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#22c1c3"/>
+              <stop offset="100%" stop-color="#7b61ff"/>
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <div class="time-display" style="position:relative;">
+          <div class="mode" id="modeLabel">Work</div>
+          <div class="minutes" id="timeLabel">25:00</div>
+          <div class="small" id="sessionInfo">Session 0</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="startPauseBtn">Start</button>
+        <button class="btn secondary" id="resetBtn">Reset</button>
+        <button class="btn secondary" id="skipBtn">Skip</button>
+      </div>
+
+      <div style="width:100%; text-align:center; margin-top:10px;">
+        <div class="small">Points: <strong id="points">0</strong> • Total Focus Minutes Today: <strong id="todayMinutes">0</strong></div>
+      </div>
+
+      <footer class="small">
+        Tip: Complete work sessions to earn points & unlock badges.
+      </footer>
+    </div>
+
+    <!-- SETTINGS & STATS CARD -->
+    <div class="card settings">
+      <div>
+        <label>Work duration (minutes)</label>
+        <input type="number" id="workInput" min="1" max="180" value="25">
+      </div>
+
+      <div>
+        <label>Break duration (minutes)</label>
+        <input type="number" id="breakInput" min="1" max="60" value="5">
+      </div>
+
+      <div>
+        <label>Auto-start next session</label>
+        <select id="autoStartSelect">
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      </div>
+
+      <div class="row" style="margin-top:8px;">
+        <label style="width:100%;">Ambient sound</label>
+        <select id="ambientSelect" style="min-width:160px;">
+          <option value="none">None</option>
+          <option value="white">Soft White Noise</option>
+          <option value="rain">Gentle Rain (generated)</option>
+        </select>
+        <button class="btn secondary" id="ambientToggle">Toggle Sound</button>
+      </div>
+
+      <hr style="opacity:0.06; margin:8px 0;">
+
+      <div>
+        <h3 style="margin:0 0 10px 0;">Daily Stats</h3>
+        <div class="stats">
+          <div class="stat">
+            <h3 id="statSessions">0</h3>
+            <p>Sessions completed</p>
+          </div>
+          <div class="stat">
+            <h3 id="statMinutes">0</h3>
+            <p>Minutes focused</p>
+          </div>
+          <div class="stat">
+            <h3 id="statPoints">0</h3>
+            <p>Points earned</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="margin-top:12px; margin-bottom:8px;">Badges</h3>
+        <div class="badges" id="badgesContainer">
+          <!-- badges rendered here -->
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <button class="btn secondary" id="resetStatsBtn">Reset Stats</button>
+        <button class="btn secondary" id="notifyBtn">Enable Notifications</button>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+/* -------------------------
+  Focus Timer - main logic
+   - Pomodoro style cycles
+   - points, badges, daily stats (localStorage)
+   - SVG circular progress
+   - ambient sound (WebAudio)
+--------------------------*/
+
+const workInput = document.getElementById('workInput');
+const breakInput = document.getElementById('breakInput');
+const autoStartSelect = document.getElementById('autoStartSelect');
+const startPauseBtn = document.getElementById('startPauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+const skipBtn = document.getElementById('skipBtn');
+const modeLabel = document.getElementById('modeLabel');
+const timeLabel = document.getElementById('timeLabel');
+const sessionInfo = document.getElementById('sessionInfo');
+
+const progressCircle = document.getElementById('progressCircle');
+const pointsEl = document.getElementById('points');
+const todayMinutesEl = document.getElementById('todayMinutes');
+
+const statSessions = document.getElementById('statSessions');
+const statMinutes = document.getElementById('statMinutes');
+const statPoints = document.getElementById('statPoints');
+const badgesContainer = document.getElementById('badgesContainer');
+
+const ambientSelect = document.getElementById('ambientSelect');
+const ambientToggle = document.getElementById('ambientToggle');
+const notifyBtn = document.getElementById('notifyBtn');
+const resetStatsBtn = document.getElementById('resetStatsBtn');
+
+/* constants */
+const CIRCLE_LENGTH = 2 * Math.PI * 45; // r=45 -> circumference = 2πr = ~282.743
+progressCircle.style.strokeDasharray = CIRCLE_LENGTH;
+progressCircle.style.strokeDashoffset = CIRCLE_LENGTH;
+
+/* app state */
+let workMinutes = parseInt(workInput.value, 10) || 25;
+let breakMinutes = parseInt(breakInput.value, 10) || 5;
+let autoStart = (autoStartSelect.value === 'true');
+let mode = 'work'; // 'work' or 'break'
+let running = false;
+let totalSeconds = workMinutes * 60;
+let remainingSeconds = totalSeconds;
+let timerInterval = null;
+let sessionsCompleted = 0;
+let points = 0;
+
+/* daily stats stored under a date-key */
+function dateKey(){ const d=new Date(); return d.toISOString().slice(0,10); }
+let stats = JSON.parse(localStorage.getItem('focus_stats') || '{}');
+if (!stats[dateKey()]) {
+  stats[dateKey()] = { sessions:0, minutes:0, points:0 };
+}
+
+/* badges definitions */
+const badges = [
+  { id: 'starter', label: 'Starter (1 session)', threshold: 1 },
+  { id: 'consistent', label: 'Consistent (4 sessions)', threshold: 4 },
+  { id: 'focused', label: 'Focused (8 sessions)', threshold: 8 },
+  { id: 'marathon', label: 'Marathon (240 mins)', thresholdMinutes: 240 },
+];
+
+/* WebAudio for sounds/ambient */
+let audioCtx = null;
+let ambientNode = null;
+let bellOsc = null;
+let ambientOn = false;
+
+/* initialize UI from saved data */
+function loadState(){
+  const saved = JSON.parse(localStorage.getItem('focus_state') || '{}');
+  if (saved.workMinutes) { workInput.value = saved.workMinutes; }
+  if (saved.breakMinutes) { breakInput.value = saved.breakMinutes; }
+  if (saved.points) { points = saved.points; }
+  if (saved.sessionsCompleted) { sessionsCompleted = saved.sessionsCompleted; }
+  updateStatsUI();
+  updatePointsUI();
+  updateTimeLabel();
+  renderBadges();
+}
+loadState();
+
+/* helpers */
+function saveState(){
+  localStorage.setItem('focus_state', JSON.stringify({
+    workMinutes: parseInt(workInput.value,10),
+    breakMinutes: parseInt(breakInput.value,10),
+    points, sessionsCompleted
+  }));
+}
+
+function saveStats(){
+  localStorage.setItem('focus_stats', JSON.stringify(stats));
+}
+
+function updatePointsUI(){ pointsEl.textContent = points; }
+function updateStatsUI(){
+  const d = stats[dateKey()];
+  statSessions.textContent = d.sessions;
+  statMinutes.textContent = d.minutes;
+  statPoints.textContent = d.points;
+  todayMinutesEl.textContent = d.minutes;
+}
+
+/* time formatting */
+function formatTime(s){
+  const mm = Math.floor(s/60).toString().padStart(2,'0');
+  const ss = Math.floor(s%60).toString().padStart(2,'0');
+  return `${mm}:${ss}`;
+}
+
+/* progress (0..1) based on remainingSeconds/totalSeconds */
+function updateProgressVisual(){
+  const progress = 1 - (remainingSeconds / totalSeconds); // 0..1
+  const offset = Math.max(0, Math.min(CIRCLE_LENGTH * (1 - progress), CIRCLE_LENGTH));
+  progressCircle.style.strokeDashoffset = offset;
+}
+
+/* update displayed time & labels */
+function updateTimeLabel(){
+  timeLabel.textContent = formatTime(remainingSeconds);
+  modeLabel.textContent = mode === 'work' ? 'Work' : 'Break';
+  sessionInfo.textContent = `Session ${sessionsCompleted}`;
+  updateProgressVisual();
+}
+
+/* start timer */
+function startTimer(){
+  if (running) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  running = true;
+  startPauseBtn.textContent = 'Pause';
+  timerInterval = setInterval(() => {
+    remainingSeconds--;
+    if (remainingSeconds <= 0){
+      clearInterval(timerInterval);
+      running = false;
+      onSessionComplete();
+    }
+    updateTimeLabel();
+  }, 1000);
+}
+
+/* pause timer */
+function pauseTimer(){
+  if (!running) return;
+  clearInterval(timerInterval);
+  running = false;
+  startPauseBtn.textContent = 'Start';
+}
+
+/* reset timer */
+function resetTimer(){
+  pauseTimer();
+  mode = 'work';
+  workMinutes = parseInt(workInput.value,10) || 25;
+  breakMinutes = parseInt(breakInput.value,10) || 5;
+  totalSeconds = workMinutes * 60;
+  remainingSeconds = totalSeconds;
+  startPauseBtn.textContent = 'Start';
+  updateTimeLabel();
+}
+
+/* skip current session (mark as complete without awarding points) */
+function skipSession(){
+  pauseTimer();
+  onSessionComplete(true); // mark skip
+}
+
+/* when a session finishes */
+function onSessionComplete(skipped = false){
+  // play end sound
+  playBell();
+
+  // finishing a work session -> award points
+  if (mode === 'work' && !skipped){
+    // points = minutes focused (workMinutes)
+    const earned = workMinutes;
+    points += earned;
+    sessionsCompleted += 1;
+
+    // update today's stats
+    const k = dateKey();
+    if (!stats[k]) stats[k] = { sessions:0, minutes:0, points:0 };
+    stats[k].sessions += 1;
+    stats[k].minutes += workMinutes;
+    stats[k].points += earned;
+    saveStats();
+  }
+
+  // update persistent state
+  saveState();
+  updatePointsUI();
+  updateStatsUI();
+  renderBadges();
+
+  // switch mode
+  mode = (mode === 'work') ? 'break' : 'work';
+  // set new timers
+  workMinutes = parseInt(workInput.value,10) || 25;
+  breakMinutes = parseInt(breakInput.value,10) || 5;
+  totalSeconds = (mode === 'work' ? workMinutes : breakMinutes) * 60;
+  remainingSeconds = totalSeconds;
+
+  // auto-start if setting true
+  if (autoStartSelect.value === 'true'){
+    startTimer();
+  } else {
+    startPauseBtn.textContent = 'Start';
+  }
+  updateTimeLabel();
+
+  // notify user
+  showNotification(`${mode === 'work' ? 'Break over' : 'Work session complete'}`, `Switched to ${mode}.`);
+}
+
+/* badges UI */
+function renderBadges(){
+  badgesContainer.innerHTML = '';
+  const daily = stats[dateKey()] || { sessions:0, minutes:0, points:0 };
+  badges.forEach(b=>{
+    const el = document.createElement('div');
+    el.className = 'badge';
+    const unlocked = (b.threshold && daily.sessions >= b.threshold) || (b.thresholdMinutes && daily.minutes >= b.thresholdMinutes);
+    el.textContent = b.label;
+    if (unlocked) el.classList.add('unlocked');
+    badgesContainer.appendChild(el);
+  });
+}
+
+/* notifications */
+function showNotification(title, body){
+  if (Notification && Notification.permission === 'granted'){
+    new Notification(title, { body });
+  }
+}
+
+function playBell(){
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(880, audioCtx.currentTime);
+  g.gain.setValueAtTime(0.01, audioCtx.currentTime);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start();
+  o.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.35);
+  g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.45);
+  o.stop(audioCtx.currentTime + 0.5);
+}
+
+function startAmbient(type){
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  stopAmbient(); 
+
+  const bufferSize = 2 * audioCtx.sampleRate;
+  const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const output = noiseBuffer.getChannelData(0);
+  for (let i=0;i<bufferSize;i++){
+    output[i] = Math.random()*2 - 1;
+  }
+  const whiteSource = audioCtx.createBufferSource();
+  whiteSource.buffer = noiseBuffer;
+  whiteSource.loop = true;
+
+  // filter for rain vs white
+  const filter = audioCtx.createBiquadFilter();
+  if (type === 'white') {
+    filter.type = 'highpass';
+    filter.frequency.value = 300; // brighter
+  } else if (type === 'rain') {
+    filter.type = 'bandpass';
+    filter.frequency.value = 1000; // rain-like
+    filter.Q.value = 0.8;
+  } else {
+    filter.type = 'lowpass';
+    filter.frequency.value = 1200;
+  }
+
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0.08;
+
+  whiteSource.connect(filter);
+  filter.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  whiteSource.start();
+  ambientNode = { source: whiteSource, filter, gain, type };
+  ambientOn = true;
+}
+
+function stopAmbient(){
+  if (ambientNode && ambientNode.source){
+    try { ambientNode.source.stop(); } catch(e){}
+    ambientNode = null;
+  }
+  ambientOn = false;
+}
+
+startPauseBtn.addEventListener('click', ()=>{
+  if (!running){
+    if (remainingSeconds === totalSeconds){
+      workMinutes = parseInt(workInput.value,10) || 25;
+      breakMinutes = parseInt(breakInput.value,10) || 5;
+      totalSeconds = (mode==='work'?workMinutes:breakMinutes)*60;
+      remainingSeconds = totalSeconds;
+    }
+    startTimer();
+  } else {
+    pauseTimer();
+    startPauseBtn.textContent = 'Start';
+  }
+});
+
+resetBtn.addEventListener('click', ()=>{
+  resetTimer();
+});
+
+skipBtn.addEventListener('click', ()=>{ skipSession(); });
+
+workInput.addEventListener('change', ()=>{
+  if (mode === 'work' && !running){
+    workMinutes = parseInt(workInput.value,10) || 25;
+    totalSeconds = workMinutes * 60;
+    remainingSeconds = totalSeconds;
+    updateTimeLabel();
+  }
+  saveState();
+});
+breakInput.addEventListener('change', ()=>{
+  if (mode === 'break' && !running){
+    breakMinutes = parseInt(breakInput.value,10) || 5;
+    totalSeconds = breakMinutes * 60;
+    remainingSeconds = totalSeconds;
+    updateTimeLabel();
+  }
+  saveState();
+});
+autoStartSelect.addEventListener('change', ()=>{ autoStart = (autoStartSelect.value==='true'); });
+
+ambientToggle.addEventListener('click', ()=>{
+  if (!ambientOn){
+    const type = ambientSelect.value;
+    if (type === 'none') {
+      alert('Select an ambient sound first.');
+      return;
+    }
+    startAmbient(type);
+    ambientToggle.textContent = 'Stop Sound';
+  } else {
+    stopAmbient();
+    ambientToggle.textContent = 'Toggle Sound';
+  }
+});
+
+ambientSelect.addEventListener('change', ()=>{
+  if (ambientOn){
+    startAmbient(ambientSelect.value);
+  }
+});
+
+notifyBtn.addEventListener('click', async ()=>{
+  if (!('Notification' in window)) {
+    alert('Notifications are not supported in this browser.');
+    return;
+  }
+  const permission = await Notification.requestPermission();
+  if (permission === 'granted') {
+    alert('Notifications enabled.');
+  } else {
+    alert('Notifications not granted.');
+  }
+});
+
+resetStatsBtn.addEventListener('click', ()=>{
+  if (confirm('Reset ALL saved daily stats and points?')) {
+    stats = {};
+    stats[dateKey()] = { sessions:0, minutes:0, points:0 };
+    points = 0;
+    sessionsCompleted = 0;
+    saveStats();
+    saveState();
+    updatePointsUI();
+    updateStatsUI();
+    renderBadges();
+  }
+});
+
+setInterval(()=>{
+  updateTimeLabel();
+}, 1000);
+
+window.addEventListener('beforeunload', ()=>{
+  saveState();
+  saveStats();
+});
+
+resetTimer();
+updatePointsUI();
+renderBadges();
+updateStatsUI();
+
+(function loadTodayStats(){
+  const d = stats[dateKey()];
+  if (d) {
+    statSessions.textContent = d.sessions;
+    statMinutes.textContent = d.minutes;
+    statPoints.textContent = d.points;
+    todayMinutesEl.textContent = d.minutes;
+  }
+})();
+
+</script>
+
+</body>
+</html>
