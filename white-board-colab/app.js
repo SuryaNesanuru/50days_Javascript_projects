@@ -9,14 +9,15 @@
 //////////////////////
 // Replace these placeholder values with your Firebase project's config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
+  apiKey: "AIzaSyDVNKspGNOTydmxT4mKfchahtWBb4tUyOs",
+  authDomain: "colab-white-board.firebaseapp.com",
+  projectId: "colab-white-board",
+  storageBucket: "colab-white-board.firebasestorage.app",
+  messagingSenderId: "240714889257",
+  appId: "1:240714889257:web:9bdbd321ef097e7c988438",
+  measurementId: "G-CQ7KLLMZGV"
 };
+
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
