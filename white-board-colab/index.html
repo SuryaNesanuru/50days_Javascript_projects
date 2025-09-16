@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Collaborative Whiteboard</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Collaborative Whiteboard</h1>
+    <div class="controls">
+      <label>Color: <input type="color" id="color" value="#000000"></label>
+      <label>Size: <input type="range" id="size" min="1" max="40" value="4"></label>
+      <button id="clearBtn">Clear</button>
+      <button id="exportBtn">Export PNG</button>
+      <span id="status" class="status">Disconnected</span>
+    </div>
+  </header>
+
+  <main>
+    <canvas id="board"></canvas>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
