@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Offline Budget Tracker</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="manifest" href="manifest.json" />
+</head>
+<body>
+<header>
+<h1>Offline Budget Tracker</h1>
+</header>
+<main>
+<form id="transaction-form">
+<input type="text" id="description" placeholder="Description" required />
+<input type="number" id="amount" placeholder="Amount" required />
+<button type="submit">Add</button>
+</form>
+<section>
+<h2>Transactions</h2>
+<ul id="transaction-list"></ul>
+</section>
+<section>
+<h2>Summary</h2>
+<p>Total: $<span id="total">0</span></p>
+<canvas id="chart" width="400" height="200"></canvas>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
