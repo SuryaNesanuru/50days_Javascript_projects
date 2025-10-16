@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Accessibility Playground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><h1>Accessibility Playground</h1></header>
+  <main>
+    <section>
+      <h2>Keyboard-first Modal</h2>
+      <button id="open-modal">Open Modal</button>
+      <div id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="panel">
+          <h3 id="modal-title">Example Modal</h3>
+          <p>Press Escape to close. Focus is trapped inside.</p>
+          <button id="close-modal">Close</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tabs</h2>
+      <div role="tablist" aria-label="Sample Tabs">
+        <button role="tab" aria-selected="true" id="tab1">Tab 1</button>
+        <button role="tab" aria-selected="false" id="tab2">Tab 2</button>
+      </div>
+      <div id="panel1" role="tabpanel">Content 1</div>
+      <div id="panel2" role="tabpanel" hidden>Content 2</div>
+    </section>
+
+    <label><input type="checkbox" id="show-focus"> Show focus outline</label>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

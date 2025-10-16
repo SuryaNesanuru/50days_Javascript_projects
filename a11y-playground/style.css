@@ -1,0 +1,6 @@
+body{font-family:system-ui,Segoe UI,Arial;padding:18px}
+#modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);visibility:hidden;opacity:0}
+#modal[aria-hidden="false"]{visibility:visible;opacity:1}
+.panel{background:#fff;padding:16px;border-radius:8px;min-width:280px}
+[hidden]{display:none}
+.focus-outline *:focus{outline:3px solid #0b84ff}
