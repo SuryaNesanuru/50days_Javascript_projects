@@ -1,0 +1,4 @@
+body{font-family:system-ui,Segoe UI,Arial;padding:18px;background:#fbfbfd;color:#111}
+#heatmap{display:grid;grid-template-columns:repeat(16,24px);gap:2px;margin-top:12px}
+.cell{width:24px;height:24px;border-radius:3px}
+.controls{margin-bottom:8px}
