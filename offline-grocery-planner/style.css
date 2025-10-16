@@ -1,0 +1,7 @@
+*{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Arial}
+body{padding:18px;background:#f7f7f9;color:#222}
+header h1{margin:0 0 12px}
+form{display:flex;gap:8px;margin-bottom:12px}
+#list{list-style:none;padding:0}
+#list li{background:#fff;border:1px solid #e2e2e6;padding:8px;border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between}
+button{cursor:pointer}

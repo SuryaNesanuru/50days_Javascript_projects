@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Offline Grocery Planner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Offline Grocery Planner</h1>
+  </header>
+  <main>
+    <form id="item-form">
+      <input id="item-name" placeholder="Item name" required />
+      <input id="item-qty" type="number" min="1" value="1" />
+      <select id="item-cat">
+        <option>Produce</option>
+        <option>Dairy</option>
+        <option>Bakery</option>
+        <option>Other</option>
+      </select>
+      <button type="submit">Add</button>
+    </form>
+
+    <ul id="list"></ul>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
