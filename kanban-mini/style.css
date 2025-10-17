@@ -1,0 +1,6 @@
+body{font-family:system-ui,Segoe UI,Arial;padding:18px;background:#f6f7fb}
+.board{display:flex;gap:12px}
+.col{background:#fff;padding:12px;border-radius:8px;flex:1;border:1px solid #e6e6ee}
+.list{min-height:100px;list-style:none;padding:0;margin:8px 0}
+.card{background:#fefefe;padding:8px;border:1px solid #eee;border-radius:6px;margin-bottom:8px}
+button{cursor:pointer}
