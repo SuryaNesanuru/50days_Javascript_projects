@@ -1,0 +1,6 @@
+body{font-family:system-ui,Segoe UI,Arial;padding:18px;background:#fafafa;color:#111}
+header h1{margin:0 0 12px}
+form{display:flex;gap:8px}
+#habits{list-style:none;padding:0;margin-top:12px}
+.habit{background:#fff;border:1px solid #e5e7eb;padding:10px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+button{cursor:pointer}
