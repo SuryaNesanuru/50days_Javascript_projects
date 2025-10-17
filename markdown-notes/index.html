@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Markdown Notes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h2>Notes</h2>
+      <ul id="notes"></ul>
+      <button id="new">New Note</button>
+    </aside>
+    <section class="editor">
+      <input id="title" placeholder="Title">
+      <div class="panes">
+        <textarea id="md" placeholder="Write markdown..."></textarea>
+        <div id="preview"></div>
+      </div>
+    </section>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

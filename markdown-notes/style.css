@@ -1,0 +1,14 @@
+:root{--bg:#0f1724;--card:#0b1220;--accent:#7c3aed;--muted:#94a3b8}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#e6eef8;background:linear-gradient(180deg,#071029, #0b1220);min-height:100vh}
+.app{display:flex;gap:20px;padding:28px}
+.sidebar{width:220px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px;padding:14px;color:var(--muted)}
+.sidebar h2{color:#fff;margin:0 0 8px}
+.sidebar ul{list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto}
+.sidebar li{padding:8px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);cursor:pointer}
+.sidebar button{width:100%;margin-top:12px;padding:8px;border-radius:8px;border:0;background:var(--accent);color:#fff}
+.editor{flex:1;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px;padding:16px}
+#title{width:100%;padding:10px;border-radius:8px;border:0;margin-bottom:12px;background:transparent;color:#fff;font-size:18px}
+.panes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+textarea{width:100%;height:60vh;padding:12px;border-radius:8px;border:0;background:#071229;color:#dbeafe;resize:vertical}
+#preview{background:#071229;border-radius:8px;padding:12px;height:60vh;overflow:auto;color:#d1e8ff}
