@@ -1,0 +1,5 @@
+body{font-family:system-ui,Segoe UI,Arial;padding:18px}
+#canvas-wrap{border:1px solid #ddd;display:inline-block;margin-top:12px}
+canvas{max-width:640px;max-height:480px}
+#annotations{list-style:none;padding:0;margin-top:12px}
+button{cursor:pointer}
